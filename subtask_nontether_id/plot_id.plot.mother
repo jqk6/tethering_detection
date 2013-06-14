@@ -1,0 +1,27 @@
+reset
+set terminal postscript enhanced
+set size ratio 0.7
+
+figure_dir = "FIGDIR"
+data_dir = "DATADIR"
+file_name = "FILENAME"
+
+set output figure_dir."/".file_name.".eps"
+
+# set title "IP ID"
+set xlabel "pkt"
+set ytics nomirror
+set ylabel "ID"
+# set key right bottom
+set key Left under reverse nobox spacing 1
+# set nokey
+
+set style line 1 lc rgb "#FF0000" lt 1 lw 3
+set style line 2 lc rgb "#0000FF" lt 1 lw 3
+set style line 3 lc rgb "orange" lt 1 lw 3
+set style line 4 lc rgb "green" lt 1 lw 3
+set style line 5 lc rgb "yellow" lt 1 lw 3
+set style line 6 lc rgb "black" lt 1 lw 3
+
+plot data_dir."/".file_name using 1 with linespoints ls 1 title "not sorted", \
+     data_dir."/".file_name using 2 with linespoints ls 2 title "sorted"
