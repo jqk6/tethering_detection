@@ -3,14 +3,16 @@
 use strict;
 
 
-# open FH_ALL_FLOW, "> ./output/detect.TTL.total.flow.summary";
-# open FH_ALL_PKT, "> ./output/detect.TTL.total.pkt.summary";
-# open FH_ALL_TPUT, "> ./output/detect.TTL.total.tput.summary";
-
-# open FH_INTRA_TPUT, "> ./output/detect.TTL.intra.tput.summary";
-# open FH_INTRA_PKT, "> ./output/detect.TTL.intra.pkt.summary";
-# open FH_INTRA_ENTROPY, "> ./output/detect.TTL.intra.entropy.summary";
-
+## output
+##  format:
+##  ./output/detect.TTL.summary
+##  <1. # tethered clients>, <2. # clients>, 
+##  <3. # tethered pkts>, <4. # pkts>, 
+##  <5. tethered traffic (bytes)>, <6. traffic (bytes)>, 
+##  <7. intra-flow tput ratio>, <8. intra-flow #pkt ratio>, <9. intra-flow pkt len entropy ratio>
+##  <10. inter-flow tput ratio>, <11. inter-flow #pkt ratio>, <12. inter-flow pkt len entropy ratio>
+##  <13. inter-flow inter arrival time mean ratio>, <14. inter-flow inter arrival time stdev ratio>
+##  
 open FH_SUMMARY, "> ./output/detect.TTL.summary";
 
 my $done = 0;
@@ -74,7 +76,7 @@ foreach my $file_id (49 .. 199, 0 .. 48) {
         elsif($_ =~ /inter flow, the ratio of tethered to non-tethered flow:/) {
             my $line = <FH>;
             if($line =~ /tput: (\d+\.\d+)/) {
-                ## inter flow: tput ratio of tethered period to non-tethered period in a flow
+                ## inter flow: tput ratio of tethered flwo to non-tethered flow
                 print FH_SUMMARY "$1, ";
             }
             else {
@@ -84,7 +86,7 @@ foreach my $file_id (49 .. 199, 0 .. 48) {
             
             $line = <FH>;
             if($line =~ /pkt: (\d+\.\d+)/) {
-                ## inter flow: pkt ratio of tethered period to non-tethered period in a flow
+                ## inter flow: pkt ratio of tethered flow to non-tethered flow
                 print FH_SUMMARY "$1, ";
             }
             else {
@@ -94,14 +96,33 @@ foreach my $file_id (49 .. 199, 0 .. 48) {
 
             $line = <FH>;
             if($line =~ /entrooy: (\d+\.\d+)/) {
-                ## inter flow: entropy ratio of tethered period to non-tethered period in a flow
-                print FH_SUMMARY "$1\n";
-
-                $done = 1;
+                ## inter flow: entropy ratio of tethered flow to non-tethered flow
+                print FH_SUMMARY "$1, ";
             }
             else {
                 die "wrong format in inter flow entropy analysis\n\t$line\n";
             }
+
+            $line = <FH>;
+            if($line =~ /inter-arrival time mean: (\d+\.\d+)/) {
+                ## inter flow: inter-arrival time mean ratio of tethered flow to non-tethered flow
+                print FH_SUMMARY "$1, ";
+            }
+            else {
+                die "wrong format in inter flow inter-arrival time mean analysis\n\t$line\n";
+            }
+
+            $line = <FH>;
+            if($line =~ /inter-arrival time stdev: (\d+\.\d+)/) {
+                ## inter flow: inter-arrival time stdev ratio of tethered flow to non-tethered flow
+                print FH_SUMMARY "$1, ";
+
+                $done = 1;
+            }
+            else {
+                die "wrong format in inter flow inter-arrival time stdev analysis\n\t$line\n";
+            }
+            
         }
         else {
             if($done == 1) {

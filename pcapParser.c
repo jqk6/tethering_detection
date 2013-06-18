@@ -273,13 +273,14 @@ int main(int argc, char **argv)
         struct ip *ip_hdr = (struct ip *)pkt_ptr; // point to an IP header structure
 
         int packet_length = ntohs(ip_hdr->ip_len);
+        unsigned short offset = ntohs(ip_hdr->ip_off) & IP_OFFMASK;
 
         if (ip_hdr->ip_p != 4)   //IP-ENCAP
         {
             not_ipv4_cnt ++;
             continue;
         }
-        if (ip_hdr->ip_off != 0)   // ignore IP fragments
+        if (offset != 0)   // ignore IP fragments
         {
             // XXX: update byte counter??
             fragment_cnt ++;

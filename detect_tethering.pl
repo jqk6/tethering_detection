@@ -18,7 +18,7 @@
 ##     The file ID of 3-hr Sprint Mobile Dataset.
 ##     This program uses this ID to look up the output files from "analyze_sprint_text.pl", i.e.
 ##     ./output/
-##     a) file.<id>.tput.ts.txt: 
+##     a) file.<id>.total_tput.ts.txt: 
 ##         total throughput timeseries
 ##     b) file.<id>.pkt.ts.txt
 ##         total packet number timeseries
@@ -34,6 +34,8 @@
 ##         timeseries of # of packets of each flow
 ##     i) file.$file_id.len_entropy.ts.txt
 ##         timeseries of packet len entropy of each flow
+##     j) file.$file_id.inter_arrival_time.ts.txt
+##         timeseries of packet len entropy of each flow
 ##
 ## - output:
 ##     a) Assume TTL heuristic is perfect:
@@ -43,10 +45,14 @@
 ##         i) tput
 ##         ii) # pkts
 ##         iii) pkt length entropy
+##         iv) mean of inter-arrival time
+##         v) stdev of inter-arrival time
 ##     c) inter-flow analysis: the ratio of non-tethered traffic to tethered traffic 
 ##         i) tput
 ##         ii) # pkts
 ##         iii) pkt length entropy
+##         iv) mean of inter-arrival time
+##         v) stdev of inter-arrival time
 ##      d) fig: generate #TTL/tput/#pkts/pkt_len_entropy timeseries of tethered clients detected by TTL
 ##          ./figures_ttl/tehtered.<file_id>.<IP>.ts.txt.eps
 ##      e) fig: generate IDs timeseries of tethered clients detected by TTL
@@ -61,7 +67,7 @@
 use strict;
 
 use List::Util qw(max min);
-
+use MyUtil;
 
 #####
 ## constant
@@ -111,6 +117,7 @@ my %ip_info;        ## to store the information of each IP
                     ## @{ip}{tput_ts}
                     ## @{ip}{pkt_ts}
                     ## @{ip}{entropy_ts}
+                    ## @{ip}{intervals}
 
 
 
@@ -127,6 +134,7 @@ my $file_pkt_ts = "file.$file_id.pkt.ts.txt";
 my $file_len_entropy_ts = "file.$file_id.len_entropy.ts.txt";
 my $file_ttl_ts = "file.$file_id.ttl.ts.txt";
 my $file_ids_ts = "file.$file_id.ids.ts.txt";
+my $file_intervals = "file.$file_id.inter_arrival_time.ts.txt";
 
 
 #####
@@ -134,7 +142,7 @@ my $file_ids_ts = "file.$file_id.ids.ts.txt";
 
 
 #######################################
-## read in ip info:
+## readin IP info:
 ##
 ##  tput
 open FH_TPUT, "$input_dir/$file_tput_ts" or die $!;
@@ -211,7 +219,22 @@ while(<FH_ID>) {
 }
 close FH_ID;
 
-##
+
+##  inter-arrival time
+open FH_ITV, "$input_dir/$file_intervals" or die $!;
+while(<FH_ITV>) {
+    my ($ip_pair, $num_of_intervals, @intervals) = split(/, /, $_);
+    ## convert to numbers
+    $num_of_intervals += 0;
+    foreach (0 .. @intervals-1) {
+        $intervals[$_] += 0;
+    }
+    @{$ip_info{$ip_pair}{intervals}} = @intervals;
+    print $ip_pair." ($num_of_intervals): ".join(",", @{$ip_info{$ip_pair}{intervals}})."\n" if($DEBUG1);
+}
+close FH_ITV;
+
+## end readin IP info
 #######################################
 
 
@@ -269,12 +292,15 @@ foreach my $this_ip_pair (keys %ip_info) {
     }
 
     if(($this_flow_tether_sec + $this_flow_normal_sec) == 0) {
+        ## XXX: no traffic at all?? 
+        ##      it's possible, because I ignore the last second...
+        # die "no traffic at all: $this_ip_pair\n";
         next;
     }
 
 
     #####
-    ## avg statistics
+    ## avg statistics: intra-flow tput/#pkt/entropy
     if($this_flow_tether_sec != 0 && $this_flow_normal_sec != 0) {
         my $this_flow_tether_avg_tput = $this_flow_tether_tput / $this_flow_tether_sec;
         my $this_flow_tether_avg_pkt = $this_flow_tether_pkt / $this_flow_tether_sec;
@@ -288,6 +314,12 @@ foreach my $this_ip_pair (keys %ip_info) {
         push(@{$tether_info{ttl}{intra_ratio_pkt}}, $this_flow_tether_avg_pkt / $this_flow_normal_avg_pkt);
         push(@{$tether_info{ttl}{intra_ratio_entropy}}, $this_flow_tether_avg_entropy / $this_flow_normal_avg_entropy) if($this_flow_normal_avg_entropy != 0);
     }
+
+
+    #####
+    ## inter-arrival time of this flow
+    my $this_interval_mean = MyUtil::average(\@{$ip_info{$this_ip_pair}{intervals}});
+    my $this_interval_stdev = MyUtil::stdev(\@{$ip_info{$this_ip_pair}{intervals}});
     
 
     #####
@@ -311,6 +343,8 @@ foreach my $this_ip_pair (keys %ip_info) {
         push(@{$tether_info{ttl}{tether_tput}}, ($this_flow_tether_tput + $this_flow_normal_tput) / ($this_flow_tether_sec + $this_flow_normal_sec));
         push(@{$tether_info{ttl}{tether_pkt}}, ($this_flow_tether_pkt + $this_flow_normal_pkt) / ($this_flow_tether_sec + $this_flow_normal_sec));
         push(@{$tether_info{ttl}{tether_entropy}}, ($this_flow_tether_entropy + $this_flow_normal_entropy) / ($this_flow_tether_sec + $this_flow_normal_sec));
+        push(@{$tether_info{ttl}{tether_interval_mean}}, $this_interval_mean);
+        push(@{$tether_info{ttl}{tether_interval_stdev}}, $this_interval_stdev);
 
 
         #####
@@ -364,6 +398,8 @@ foreach my $this_ip_pair (keys %ip_info) {
         push(@{$tether_info{ttl}{normal_tput}}, ($this_flow_tether_tput + $this_flow_normal_tput) / ($this_flow_tether_sec + $this_flow_normal_sec));
         push(@{$tether_info{ttl}{normal_pkt}}, ($this_flow_tether_pkt + $this_flow_normal_pkt) / ($this_flow_tether_sec + $this_flow_normal_sec));
         push(@{$tether_info{ttl}{normal_entropy}}, ($this_flow_tether_entropy + $this_flow_normal_entropy) / ($this_flow_tether_sec + $this_flow_normal_sec));
+        push(@{$tether_info{ttl}{normal_interval_mean}}, $this_interval_mean);
+        push(@{$tether_info{ttl}{normal_interval_stdev}}, $this_interval_stdev);
 
 
         #####
@@ -403,38 +439,30 @@ print "    pkt: $avg_intra_ratio_pkt\n";
 print "    entrooy: $avg_intra_ratio_entropy\n";
 
 
-my $avg_tether_flow_tput = 0;
-$avg_tether_flow_tput += $_ for @{$tether_info{ttl}{tether_tput}};
-$avg_tether_flow_tput /= scalar(@{$tether_info{ttl}{tether_tput}});
+my $avg_tether_flow_tput = MyUtil::average(\@{$tether_info{ttl}{tether_tput}});
+my $avg_tether_flow_pkt = MyUtil::average(\@{$tether_info{ttl}{tether_pkt}});
+my $avg_tether_flow_entropy = MyUtil::average(\@{$tether_info{ttl}{tether_entropy}});
+my $avg_tether_flow_interval_mean = MyUtil::average(\@{$tether_info{ttl}{tether_interval_mean}});
+my $avg_tether_flow_interval_stdev = MyUtil::average(\@{$tether_info{ttl}{tether_interval_stdev}});
 
-my $avg_tether_flow_pkt = 0;
-$avg_tether_flow_pkt += $_ for @{$tether_info{ttl}{tether_pkt}};
-$avg_tether_flow_pkt /= scalar(@{$tether_info{ttl}{tether_pkt}});
-
-my $avg_tether_flow_entropy = 0;
-$avg_tether_flow_entropy += $_ for @{$tether_info{ttl}{tether_entropy}};
-$avg_tether_flow_entropy /= scalar(@{$tether_info{ttl}{tether_entropy}});
-
-my $avg_normal_flow_tput = 0;
-$avg_normal_flow_tput += $_ for @{$tether_info{ttl}{normal_tput}};
-$avg_normal_flow_tput /= scalar(@{$tether_info{ttl}{normal_tput}});
-
-my $avg_normal_flow_pkt = 0;
-$avg_normal_flow_pkt += $_ for @{$tether_info{ttl}{normal_pkt}};
-$avg_normal_flow_pkt /= scalar(@{$tether_info{ttl}{normal_pkt}});
-
-my $avg_normal_flow_entropy = 0;
-$avg_normal_flow_entropy += $_ for @{$tether_info{ttl}{normal_entropy}};
-$avg_normal_flow_entropy /= scalar(@{$tether_info{ttl}{normal_entropy}});
+my $avg_normal_flow_tput = MyUtil::average(\@{$tether_info{ttl}{normal_tput}});
+my $avg_normal_flow_pkt = MyUtil::average(\@{$tether_info{ttl}{normal_pkt}});
+my $avg_normal_flow_entropy = MyUtil::average(\@{$tether_info{ttl}{normal_entropy}});
+my $avg_normal_flow_interval_mean = MyUtil::average(\@{$tether_info{ttl}{normal_interval_mean}});
+my $avg_normal_flow_interval_stdev = MyUtil::average(\@{$tether_info{ttl}{normal_interval_stdev}});
 
 $tether_info{ttl}{inter_ratio_tput} = $avg_tether_flow_tput / $avg_normal_flow_tput;
 $tether_info{ttl}{inter_ratio_pkt} = $avg_tether_flow_pkt / $avg_normal_flow_pkt;
 $tether_info{ttl}{inter_ratio_entropy} = $avg_tether_flow_entropy / $avg_normal_flow_entropy;
+$tether_info{ttl}{inter_ratio_interval_mean} = $avg_tether_flow_interval_mean / $avg_normal_flow_interval_mean;
+$tether_info{ttl}{inter_ratio_interval_stdev} = $avg_tether_flow_interval_stdev / $avg_normal_flow_interval_stdev;
 
 print "  inter flow, the ratio of tethered to non-tethered flow:\n";
 print "    tput: ".$tether_info{ttl}{inter_ratio_tput}."\n";
 print "    pkt: ".$tether_info{ttl}{inter_ratio_pkt}."\n";
 print "    entrooy: ".$tether_info{ttl}{inter_ratio_entropy}."\n";
+print "    inter-arrival time mean: ".$tether_info{ttl}{inter_ratio_interval_mean}."\n";
+print "    inter-arrival time stdev: ".$tether_info{ttl}{inter_ratio_interval_stdev}."\n";
 
 
 1;

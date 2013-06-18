@@ -802,6 +802,50 @@ sub cal_self_relative_ent_among_top_n {
 	return $p * log($p/$q);
 }
 
+sub average{
+    my($data) = @_;
+    if (not @$data) {
+            die("Empty array\n");
+    }
+    my $total = 0;
+    foreach (@$data) {
+            $total += $_;
+    }
+    my $average = $total / @$data;
+    return $average;
+}
 
+sub stdev{
+    my($data) = @_;
+    if(@$data == 1){
+            return 0;
+    }
+    my $average = &average($data);
+    my $sqtotal = 0;
+    foreach(@$data) {
+            $sqtotal += ($average-$_) ** 2;
+    }
+    my $std = ($sqtotal / (@$data-1)) ** 0.5;
+    return $std;
+}
+
+
+sub recall {
+	my ($tp, $fn, $fp, $tn) = @_;
+
+	return ( $tp / ($tp + $fn) );
+}
+
+sub precision {
+	my ($tp, $fn, $fp, $tn) = @_;
+
+	return ( $tp / ($tp + $fp) );
+}
+
+sub f1_score {
+	my ($precision, $recall) = @_;
+
+	return (2 * $precision * $recall / ($precision + $recall));
+}
 
 1;  		# 回傳一個真值

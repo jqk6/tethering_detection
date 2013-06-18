@@ -2,7 +2,7 @@
 
 ##################################################
 ## Author: Yi-Chao Chen 
-## 2013/06/13 @ Narus 
+## 2013/06/14 @ Narus 
 ##
 ## Generate IP's ID field timeseries of non-tethered users. 
 ## We want to see if there is difference between ID from tehtered users and non-tethered users.

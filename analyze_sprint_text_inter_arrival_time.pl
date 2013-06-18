@@ -2,7 +2,7 @@
 
 ##################################################
 ## Author: Yi-Chao Chen 
-## 2013/06/13 @ Narus 
+## 2013/06/14 @ Narus 
 ##
 ## Group packets in flows, and analyze inter-arrival time.
 ##
@@ -102,7 +102,14 @@ open FH_ITV, "> $output_dir/file.$file_id.inter_arrival_time.ts.txt" or die $!;
 foreach my $this_ip_pair (keys %ip_info) {
     
     ## inter-arrival time
-    print FH_ITV $this_ip_pair.", ".scalar(@{$ip_info{$this_ip_pair}{intervals}}).", ".join(", ", @{$ip_info{$this_ip_pair}{intervals}})."\n";
+    if(exists $ip_info{$this_ip_pair}{intervals}) {
+        print FH_ITV $this_ip_pair.", ".scalar(@{$ip_info{$this_ip_pair}{intervals}}).", ".join(", ", @{$ip_info{$this_ip_pair}{intervals}})."\n";
+    }
+    else {
+        ## XXX: if there is no pkt or just one pkt, let the interval very large
+        print FH_ITV $this_ip_pair.", 1, 60\n";
+    }
+
 }
 close FH_ITV;
 

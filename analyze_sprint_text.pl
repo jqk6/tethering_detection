@@ -12,7 +12,7 @@
 ##
 ## - output
 ##     ./output/
-##     a) file.<id>.tput.ts.txt: 
+##     a) file.<id>.total_tput.ts.txt: 
 ##         total throughput timeseries
 ##     b) file.<id>.pkt.ts.txt
 ##         total packet number timeseries
@@ -224,7 +224,7 @@ $total_pkt += $_ for @pkt_ts;
 print "tput=$total_tput, #pkt=$total_pkt\n";
 print "number of dst>src pairs = ".scalar(keys(%ip_info))."\n";
 
-open FH, "> $output_dir/file.$file_id.tput.ts.txt" or die $!;
+open FH, "> $output_dir/file.$file_id.total_tput.ts.txt" or die $!;
 print FH join(", ", @tput_ts);
 close FH;
 

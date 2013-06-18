@@ -1,6 +1,9 @@
 #!/bin/perl 
 
 ########################################
+## Author: Yi-Chao Chen 
+## 2013/06/14 @ Narus 
+##
 ## Some time ago, the initial TTL of Windows is 64.
 ## Check if there are any clients whose initial TTL is 64.
 ##
