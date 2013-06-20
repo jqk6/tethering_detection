@@ -7,9 +7,24 @@
 ## Read IPs of tethered clients detected by different methods, and validate the overlapping
 ##
 ## - input: 
+##     ./tethered_clients/
 ##     IP of tethered clients.
-##      a) TTL (whole trace): ./tethered_clients/TTL_whole_trace.<file id>.txt
-##      b) TTL (one second) : ./tethered_clients/TTL_one_second.<file id>.txt
+##      a) TTL (whole trace)         : TTL_whole_trace.<file id>.txt
+##      b) TTL (one second)          : TTL_one_second.<file id>.txt
+##      c) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 5, 10, 60, 600)
+##                                     Thresholds = (2 .. 30)
+##      d) RTT (variance)            : RTT_variance.threshold<threshold>.<file id>.txt
+##                                     Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8)
+##      e) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
+##                                     Thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, .. , 4)
+##      f) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
+##                                     Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
+##      g) Throughput                : Tput_whole_trace.threshold<threshold>.<file id>.txt
+##                                     Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
+##      h) Pkt length Entropy        : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 600)
+##                                     Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
 ##
 ## - output:
 ##      a) How many clients are detected by 1/2/3/4/5... methods
@@ -46,7 +61,11 @@ my $input_dir = "./tethered_clients";
 my $input_all_client_dir = "./output";
 my $output_dir = "./tethered_clients";
 my @methods = ("TTL_one_second",
-               "TTL_whole_trace");
+               "TTL_whole_trace",
+               "Tput_whole_trace.threshold10000",
+               "Connections_timebin1.threshold30",
+               "Pkt_len_entropy.timebin600.threshold1.2",
+               "RTT_variance.threshold0.45");
 
 my $file_id;
 

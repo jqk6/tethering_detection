@@ -2,3 +2,11 @@
 ## exec
 pcapParser
 pcapParser2
+
+
+#####
+## output directories
+*/output_tcp
+*/output
+output
+tethered_clients
