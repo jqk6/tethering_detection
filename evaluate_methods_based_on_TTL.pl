@@ -30,6 +30,7 @@
 ##
 ## - output:
 ##      PR curve (Precision-Recall)
+##      ./tethered_clients/process_output/
 ##        format:
 ##        <threshold> <TP> <FN> <FP> <TN> <precision> <recall>
 ##

@@ -4,30 +4,15 @@
 ## Author: Yi-Chao Chen 
 ## 2013/06/17 @ Narus 
 ##
-## Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
+## Group TCP packets by <src IP, src port, dst IP, dst port> and manually check Sequence/ACK numbers.
 ##
 ## - input: parsed_pcap_text
 ##     format
 ##     <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len>
 ##
 ## - output
-##     ./output/
-##     a) file.<id>.tput.ts.txt: 
-##         total throughput timeseries
-##     b) file.<id>.pkt.ts.txt
-##         total packet number timeseries
-##     c) file.<id>.ids.ts.txt
-##         IP ID of each packet of each flow
-##     d) file.<id>.ttl.txt
-##         TTL of each flow
-##     e) file.<id>.ttl.ts.txt
-##         timeseries of # of unique TTLs of each flow
-##     f) file.<id>.tput.ts.txt
-##         timeseries of tput of each flow
-##     g) file.<id>.pkt.ts.txt
-##         timeseries of # of packets of each flow
-##     i) file.$file_id.len_entropy.ts.txt
-##         timeseries of packet len entropy of each flow
+##     print to STDOUT
+##     for each <src_ip, src_port, dst ip, dst port>, show <timestamp> <sequence number> <payload size> <ack sequence> <ACK flag>
 ##
 ##  e.g.
 ##      perl analyze_sprint_tcp_seq.pl /data/ychen/sprint/text2/omni.out.49.eth.pcap.txt

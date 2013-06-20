@@ -19,7 +19,7 @@
 ##      ./tethered_clients/Tput_whole_trace.threshold<threshold>.<file id>.txt
 ##
 ##  e.g.
-##      perl detect_tethering_inter_arrival_time.pl 49
+##      perl detect_tethering_tput.pl 49
 ##
 ##################################################
 
