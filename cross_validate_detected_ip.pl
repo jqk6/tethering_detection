@@ -9,22 +9,34 @@
 ## - input: 
 ##     ./tethered_clients/
 ##     IP of tethered clients.
+##      Possible base:
 ##      a) TTL (whole trace)         : TTL_whole_trace.<file id>.txt
 ##      b) TTL (one second)          : TTL_one_second.<file id>.txt
-##      c) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##      c) TTL (default value)       : TTL_default_value.<file id>.txt
+##      d) User Agent                : User_agent.<file id>.txt
+##      e) TTL (diff)                : TTL_diff.<file id>.txt
+##
+##      Evaluation Methods
+##      a) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                                     Time bins  = (1, 5, 10, 60, 600)
 ##                                     Thresholds = (2 .. 30)
-##      d) RTT (variance)            : RTT_variance.threshold<threshold>.<file id>.txt
+##      b) RTT (variance)            : RTT_variance.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8)
-##      e) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
+##      c) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, .. , 4)
-##      f) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
+##      d) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
-##      g) Throughput                : Tput_whole_trace.threshold<threshold>.<file id>.txt
+##      e) Throughput                : Tput_whole_trace.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
-##      h) Pkt length Entropy        : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
+##      f) Pkt length Entropy        : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                                     Time bins  = (1, 600)
 ##                                     Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
+##      g) UDP Connections           : UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 5, 10, 60, 600)
+##                                     Thresholds = (2 .. 30)
+##      h) TCP/UDP Connections       : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 5, 10, 60, 600)
+##                                     Thresholds = (2 .. 30)
 ##
 ## - output:
 ##      a) How many clients are detected by 1/2/3/4/5... methods
@@ -53,6 +65,9 @@ my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
 my $DEBUG2 = 1; ## print for debug
 
+my $FILTERED_SRC_IP = 1;    ## in the trace, some packets are from clients and some are from servers
+                            ## we are not interested in those from servers
+                            ## it seems the clients from cellular network (Sprint) have IP: 28.XXX.XXX.XXX
 
 
 #####
@@ -62,10 +77,15 @@ my $input_all_client_dir = "./output";
 my $output_dir = "./tethered_clients";
 my @methods = ("TTL_one_second",
                "TTL_whole_trace",
+               "TTL_default_value",
+               "TTL_diff",
+               "User_agent",
                "Tput_whole_trace.threshold10000",
                "Connections_timebin1.threshold30",
                "Pkt_len_entropy.timebin600.threshold1.2",
-               "RTT_variance.threshold0.45");
+               "RTT_variance.threshold0.45",
+               "UDP_Connections_timebin1.threshold28",
+               "TCP_UDP_Connections_timebin60.threshold14");
 
 my $file_id;
 
@@ -88,8 +108,14 @@ print "file ID = $file_id\n" if($DEBUG1);
 #####
 ## main starts here
 
-my $number_clients = `cat $input_all_client_dir/file.$file_id.ttl.txt | wc -l` + 0;
-print "there are $number_clients clients in file $file_id\n" if($DEBUG1);
+my $number_clients = 0;
+if($FILTERED_SRC_IP) {
+    $number_clients = `cat $input_all_client_dir/file.$file_id.ttl.txt | grep "^28\\\.." | wc -l` + 0;
+}
+else {
+    $number_clients = `cat $input_all_client_dir/file.$file_id.ttl.txt | wc -l` + 0;
+}
+print "there are $number_clients clients in file $file_id\n" if($DEBUG2);
 
 
 foreach my $this_method (@methods) {
@@ -102,6 +128,11 @@ foreach my $this_method (@methods) {
     while(my $this_ip = <FH>) {
         chomp $this_ip;
         print $this_ip."\n" if($DEBUG1);
+
+        if($FILTERED_SRC_IP == 1) {
+            next if(!($this_ip =~ /^28\./));
+        }
+
 
 
         push(@{$tether_info{ip}{$this_ip}{detected_methods}}, $this_method);

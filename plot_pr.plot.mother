@@ -1,5 +1,5 @@
 ########################################################
-## c) Connections : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+## a) Connections : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                  Time bins  = (1, 5, 10, 60, 600)
 ##                  Thresholds = (2 .. 30)
 
@@ -8,9 +8,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_connections"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -28,15 +30,15 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."Connections_timebin1.PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
-     input_dir."Connections_timebin5.PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=5s", \
-     input_dir."Connections_timebin10.PR.".file_id.".txt" using 7:6 with linespoints ls 3 title "time bin=10s", \
-     input_dir."Connections_timebin60.PR.".file_id.".txt" using 7:6 with linespoints ls 4 title "time bin=60s", \
-     input_dir."Connections_timebin600.PR.".file_id.".txt" using 7:6 with linespoints ls 5 title "time bin=600s"
+plot input_dir."Connections_timebin1.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
+     input_dir."Connections_timebin5.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=5s", \
+     input_dir."Connections_timebin10.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 3 title "time bin=10s", \
+     input_dir."Connections_timebin60.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 4 title "time bin=60s", \
+     input_dir."Connections_timebin600.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 5 title "time bin=600s"
 
 
 ########################################################
-## d) RTT (variance) : RTT_variance.threshold<threshold>.<file id>.txt
+## b) RTT (variance) : RTT_variance.threshold<threshold>.<file id>.txt
 ##                     Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8)
 
 reset
@@ -44,9 +46,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_rtt_variance"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -64,12 +68,12 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."RTT_variance.PR.".file_id.".txt" using 7:6 with linespoints ls 1
+plot input_dir."RTT_variance.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1
 
 
 
 ########################################################
-## e) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
+## c) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
 ##                                Thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, .. , 4)
 
 reset
@@ -77,9 +81,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_inter_arrival_time_mean"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -97,12 +103,12 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."Inter_arrival_time_mean.PR.".file_id.".txt" using 7:6 with linespoints ls 1
+plot input_dir."Inter_arrival_time_mean.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1
 
 
 
 ########################################################
-## f) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
+## d) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
 ##                                Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
 
 reset
@@ -110,9 +116,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_inter_arrival_time_stdev"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -130,11 +138,11 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."Inter_arrival_time_stdev.PR.".file_id.".txt" using 7:6 with linespoints ls 1
+plot input_dir."Inter_arrival_time_stdev.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1
 
 
 ########################################################
-## g) Throughput : Tput_whole_trace.threshold<threshold>.<file id>.txt
+## e) Throughput : Tput_whole_trace.threshold<threshold>.<file id>.txt
 ##                 Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
 
 reset
@@ -142,9 +150,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_tput_whole_trace"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -162,11 +172,11 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."Tput_whole_trace.PR.".file_id.".txt" using 7:6 with linespoints ls 1
+plot input_dir."Tput_whole_trace.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1
 
 
 ########################################################
-## h) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
+## f) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                         Time bins  = (1, 600)
 ##                         Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
 
@@ -175,9 +185,11 @@ set terminal postscript enhanced
 set size ratio 0.7
 
 file_id = "FILE_ID"
-input_dir = "~/sprint/tethered_clients/process_output/"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
 file_name = "PR_pkt_len_entropy"
-set output input_dir.file_name.".".file_id.".eps"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
 
 set title "Precision-Recall curve"
 set xlabel "Recall"
@@ -195,7 +207,83 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."Pkt_len_entropy.timebin1.PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
-     input_dir."Pkt_len_entropy.timebin600.PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=whole"
+plot input_dir."Pkt_len_entropy.timebin1.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
+     input_dir."Pkt_len_entropy.timebin600.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=whole"
 
 
+########################################################
+## g) UDP Connections : UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                  Time bins  = (1, 5, 10, 60, 600)
+##                  Thresholds = (2 .. 30)
+
+reset
+set terminal postscript enhanced
+set size ratio 0.7
+
+file_id = "FILE_ID"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
+file_name = "PR_UDP_connections"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
+
+set title "Precision-Recall curve"
+set xlabel "Recall"
+set ytics nomirror
+set ylabel "Precision"
+# set key right bottom
+# set key Left under reverse nobox spacing 1
+set key Left above reverse nobox spacing 1
+# set nokey
+
+set style line 1 lc rgb "#FF0000" lt 1 lw 3
+set style line 2 lc rgb "#0000FF" lt 1 lw 3
+set style line 3 lc rgb "orange" lt 1 lw 3
+set style line 4 lc rgb "green" lt 1 lw 3
+set style line 5 lc rgb "yellow" lt 1 lw 3
+set style line 6 lc rgb "black" lt 1 lw 3
+
+plot input_dir."UDP_Connections_timebin1.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
+     input_dir."UDP_Connections_timebin5.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=5s", \
+     input_dir."UDP_Connections_timebin10.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 3 title "time bin=10s", \
+     input_dir."UDP_Connections_timebin60.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 4 title "time bin=60s", \
+     input_dir."UDP_Connections_timebin600.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 5 title "time bin=600s"
+
+
+########################################################
+## h) TCP/UDP Connections : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                  Time bins  = (1, 5, 10, 60, 600)
+##                  Thresholds = (2 .. 30)
+
+reset
+set terminal postscript enhanced
+set size ratio 0.7
+
+file_id = "FILE_ID"
+base_method = "BASE_METHOD"
+input_dir = "/export/home/ychen/sprint/tethered_clients_processed_data/"
+output_dir = "/export/home/ychen/sprint/tethered_clients_figures/"
+file_name = "PR_TCP_UDP_connections"
+set output output_dir.file_name.".base_".base_method.".".file_id.".eps"
+
+set title "Precision-Recall curve"
+set xlabel "Recall"
+set ytics nomirror
+set ylabel "Precision"
+# set key right bottom
+# set key Left under reverse nobox spacing 1
+set key Left above reverse nobox spacing 1
+# set nokey
+
+set style line 1 lc rgb "#FF0000" lt 1 lw 3
+set style line 2 lc rgb "#0000FF" lt 1 lw 3
+set style line 3 lc rgb "orange" lt 1 lw 3
+set style line 4 lc rgb "green" lt 1 lw 3
+set style line 5 lc rgb "yellow" lt 1 lw 3
+set style line 6 lc rgb "black" lt 1 lw 3
+
+plot input_dir."TCP_UDP_Connections_timebin1.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1 title "time bin=1s", \
+     input_dir."TCP_UDP_Connections_timebin5.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 2 title "time bin=5s", \
+     input_dir."TCP_UDP_Connections_timebin10.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 3 title "time bin=10s", \
+     input_dir."TCP_UDP_Connections_timebin60.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 4 title "time bin=60s", \
+     input_dir."TCP_UDP_Connections_timebin600.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 5 title "time bin=600s"

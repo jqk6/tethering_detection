@@ -16,6 +16,13 @@
    b) round-trip time
    c) TCP WIN
 
+3. UDP layer
+   a) # of connections
+
+4. Application layer
+   a) User-Agent
+
+
 /***************
  * Directories
 ***************/
@@ -46,9 +53,13 @@
         ./output
         <# client> <# normal client w/ TTL_X> <...> <# tethered client w/ TTL_X> <...>
 
-2. subtask_tether_ttl_diff
+2. subtask_ttl_distribution
     a) Check if the TTLs behind a mobile station only differs by 1.
     b) Check the distribution of TTL values.
+
+    some useful info:
+    - http://forums.macrumors.com/showthread.php?t=1140306
+    - http://www.map.meteoswiss.ch/map-doc/ftp-probleme.htm
 
 3. subtask_nontether_id
     Generate IP's ID field timeseries of non-tethered users. 
@@ -56,6 +67,10 @@
 
 4. subtask_tcp_seq_ack
     Group TCP packets by <src IP, src port, dst IP, dst port> and manually check the sequence/ACK numbers.
+
+5. subtask_http_agents
+    List all the User-Agent from http header of each user
+
 
 /***************
  * Sprint tools
@@ -94,212 +109,224 @@
 
 
 
-2. analyze_sprint_text.pl
-    Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
+2. 
+    a) analyze_sprint_text.pl
+        Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
 
-    - input: parsed_pcap_text
-        format
-        <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length>
-    
-    - output
-        ./output/
-        a) file.<id>.tput.ts.txt: 
-            total throughput timeseries
-        b) file.<id>.pkt.ts.txt
-            total packet number timeseries
-        c) file.<id>.ids.ts.txt
-            IP ID of each packet of each flow
-        d) file.<id>.ttl.txt
-            TTL of each flow
-        e) file.<id>.ttl.ts.txt
-            timeseries of # of unique TTLs of each flow
-        f) file.<id>.tput.ts.txt
-            timeseries of tput of each flow
-        g) file.<id>.pkt.ts.txt
-            timeseries of # of packets of each flow
-        i) file.$file_id.len_entropy.ts.txt
-            timeseries of packet len entropy of each flow
+        - input: parsed_pcap_text
+            format
+            <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length>
+        
+        - output
+            ./output/
+            a) file.<id>.tput.ts.txt: 
+                total throughput timeseries
+            b) file.<id>.pkt.ts.txt
+                total packet number timeseries
+            c) file.<id>.ids.ts.txt
+                IP ID of each packet of each flow
+            d) file.<id>.ttl.txt
+                TTL of each flow
+            e) file.<id>.ttl.ts.txt
+                timeseries of # of unique TTLs of each flow
+            f) file.<id>.tput.ts.txt
+                timeseries of tput of each flow
+            g) file.<id>.pkt.ts.txt
+                timeseries of # of packets of each flow
+            i) file.$file_id.len_entropy.ts.txt
+                timeseries of packet len entropy of each flow
 
-    - batch_pcapParser.sh
-        - run analyze_sprint_text.pl in batch
-        - input files: /data/ychen/sprint/text
-        - output files: 
-            a) output of analyze_sprint_text.pl
-            b) log file: /export/home/ychen/sprint/output/<input file>.log
+        - batch_pcapParser.sh
+            - run analyze_sprint_text.pl in batch
+            - input files: /data/ychen/sprint/text
+            - output files: 
+                a) output of analyze_sprint_text.pl
+                b) log file: /export/home/ychen/sprint/output/<input file>.log
 
-    note. 
-        a flow here means an unique <src IP, dst IP> pair
-        XXX: should be changed to <src IP>??
-
-
-3.1 analyze_sprint_text_inter_arrival_time.pl
-    Group packets in flows, and analyze inter-arrival time.
-
-    - input: parsed_pcap_text
-        format
-        <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length>
-
-    - output
-        ./output/
-        a) file.<id>.inter_arrival_time.ts.txt
-        timeseries of inter-arrival time of each flow
+        note. 
+            a flow here means an unique <src IP, dst IP> pair
+            XXX: should be changed to <src IP>??
 
 
-3.2 analyze_sprint_tcp_connections.pl
-    Analyze # connections (i.e. <src ip> <src port> <dst ip> <dst port>) of different time bins
+    b) analyze_sprint_text_inter_arrival_time.pl
+        Group packets in flows, and analyze inter-arrival time.
 
-    - input: parsed_pcap_text
-        format:
-        <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len>
+        - input: parsed_pcap_text
+            format
+            <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length>
 
-    - output
-        ./output/
-        a) file.<id>.connections.bin<time bin size>.txt
-            timeseries of # of connections
-
-
-3.3 analyze_sprint_tcp_rtt.pl
-    Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
+        - output
+            ./output/
+            a) file.<id>.inter_arrival_time.ts.txt
+            timeseries of inter-arrival time of each flow
 
 
-4. detect_tethering.pl
+    c) analyze_sprint_tcp_connections.pl
+        Analyze # connections (i.e. <src ip> <src port> <dst ip> <dst port>) of different time bins
 
-    Read in results from "analyze_sprint_text.pl" and "analyze_sprint_text_inter_arrival_time.pl" to detect tethering usage.
-    a) The detection is based on number of different TTL per second. 
-    b) After detecting tethered clients, calculate:
-        i) how many tethered clients.
-        ii) how much traffic are generated by tethered clients.
-    c) Find the possible metrics as the detection confidence, and do the inter-flow/intra-flow analysis
-        i) tput
-        ii) # pkts
-        iii) pkt length entropy
+        - input: parsed_pcap_text
+            format:
+            <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len>
 
-    - input: file_id
-        The file ID of 3-hr Sprint Mobile Dataset.
-        This program uses this ID to look up the output files from "analyze_sprint_text.pl", i.e.
-        ./output/
-        a) file.<id>.tput.ts.txt: 
-            total throughput timeseries
-        b) file.<id>.pkt.ts.txt
-            total packet number timeseries
-        c) file.<id>.ids.ts.txt
-            IP ID of each packet of each flow
-        d) file.<id>.ttl.txt
-            TTL of each flow
-        e) file.<id>.ttl.ts.txt
-            timeseries of # of unique TTLs of each flow
-        f) file.<id>.tput.ts.txt
-            timeseries of tput of each flow
-        g) file.<id>.pkt.ts.txt
-            timeseries of # of packets of each flow
-        i) file.$file_id.len_entropy.ts.txt
-            timeseries of packet len entropy of each flow
-        j) file.$file_id.inter_arrival_time.ts.txt
-            timeseries of packet len entropy of each flow
+        - output
+            ./output/
+            a) file.<id>.connections.bin<time bin size>.txt
+                timeseries of # of connections
 
-    - output:
-        a) Assume TTL heuristic is perfect:
+
+    d) analyze_sprint_tcp_rtt.pl
+        Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
+
+
+3. 
+    a) detect_tethering.pl
+
+        Read in results from "analyze_sprint_text.pl" and "analyze_sprint_text_inter_arrival_time.pl" to detect tethering usage.
+        a) The detection is based on number of different TTL per second. 
+        b) After detecting tethered clients, calculate:
             i) how many tethered clients.
             ii) how much traffic are generated by tethered clients.
-        b) intra-flow analysis: the ratio of non-tethered traffic to tethered traffic 
+        c) Find the possible metrics as the detection confidence, and do the inter-flow/intra-flow analysis
             i) tput
             ii) # pkts
             iii) pkt length entropy
-            iv) mean of inter-arrival time
-            v) stdev of inter-arrival time
-        c) inter-flow analysis: the ratio of non-tethered traffic to tethered traffic 
-            i) tput
-            ii) # pkts
-            iii) pkt length entropy
-            iv) mean of inter-arrival time
-            v) stdev of inter-arrival time
-        d) fig: generate #TTL/tput/#pkts/pkt_len_entropy timeseries of tethered clients detected by TTL
-            ./figures_ttl/tehtered.<file_id>.<IP>.ts.txt.eps
-        e) fig: generate IDs timeseries of tethered clients detected by TTL
-            ./figures_ttl/tehtered.<file_id>.<IP>.ids.txt.eps
 
-    - batch_detect_tethering.sh
-        - run detect_tethering.pl in batch
-        - input files: /export/home/ychen/sprint/output/
-        - output files: /export/home/ychen/sprint/output/detect.TTL.<input file ID>.log
+        - input: file_id
+            The file ID of 3-hr Sprint Mobile Dataset.
+            This program uses this ID to look up the output files from "analyze_sprint_text.pl", i.e.
+            ./output/
+            a) file.<id>.tput.ts.txt: 
+                total throughput timeseries
+            b) file.<id>.pkt.ts.txt
+                total packet number timeseries
+            c) file.<id>.ids.ts.txt
+                IP ID of each packet of each flow
+            d) file.<id>.ttl.txt
+                TTL of each flow
+            e) file.<id>.ttl.ts.txt
+                timeseries of # of unique TTLs of each flow
+            f) file.<id>.tput.ts.txt
+                timeseries of tput of each flow
+            g) file.<id>.pkt.ts.txt
+                timeseries of # of packets of each flow
+            i) file.$file_id.len_entropy.ts.txt
+                timeseries of packet len entropy of each flow
+            j) file.$file_id.inter_arrival_time.ts.txt
+                timeseries of packet len entropy of each flow
 
+        - output:
+            a) Assume TTL heuristic is perfect:
+                i) how many tethered clients.
+                ii) how much traffic are generated by tethered clients.
+            b) intra-flow analysis: the ratio of non-tethered traffic to tethered traffic 
+                i) tput
+                ii) # pkts
+                iii) pkt length entropy
+                iv) mean of inter-arrival time
+                v) stdev of inter-arrival time
+            c) inter-flow analysis: the ratio of non-tethered traffic to tethered traffic 
+                i) tput
+                ii) # pkts
+                iii) pkt length entropy
+                iv) mean of inter-arrival time
+                v) stdev of inter-arrival time
+            d) fig: generate #TTL/tput/#pkts/pkt_len_entropy timeseries of tethered clients detected by TTL
+                ./figures_ttl/tehtered.<file_id>.<IP>.ts.txt.eps
+            e) fig: generate IDs timeseries of tethered clients detected by TTL
+                ./figures_ttl/tehtered.<file_id>.<IP>.ids.txt.eps
 
-5.1 detect_tethering_TTL.pl
-    Read in results from "analyze_sprint_text.pl" and detect TTL tethering usage.
-        a) > 1 TTL across the whole trace
-        b) > 1 TTL at any second
-
-    - input: file_id
-        The file ID of 3-hr Sprint Mobile Dataset.
-        This program uses this ID to look up the output files from "analyze_sprint_text.pl", i.e.
-        ./output/
-        a) file.<id>.ttl.txt
-            TTLs of each flow
-        b) file.<id>.ttl.ts.txt
-            timeseries of # of unique TTLs of each flow
-
-    - output:
-        IP of tethered clients.
-        a) ./tethered_clients/TTL_whole_trace.<file id>.txt
-        b) ./tethered_clients/TTL_one_second.<file id>.txt
-
-5.2 detect_tethering_connections.pl
-    Read in results from "analyze_sprint_tcp_connections.pl" and detect tethering using number of connections.
-        e.g. > n connections at any time using time bin size b
-
-    - input: file_id
-        The file ID of 3-hr Sprint Mobile Dataset.
-        This program uses this ID to look up the output files from "analyze_sprint_tcp_connections.pl", i.e.
-        ./output/
-        a) file.<id>.connections.bin<time bin size>.txt
-            timeseries of # of connections
-
-    - output:
-        IP of tethered clients.
-        ./tethered_clients/Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+        - batch_detect_tethering.sh
+            - run detect_tethering.pl in batch
+            - input files: /export/home/ychen/sprint/output/
+            - output files: /export/home/ychen/sprint/output/detect.TTL.<input file ID>.log
 
 
-5.3 detect_tethering_rtt.pl
-    Read in results from "analyze_sprint_tcp_rtt.pl" and detect tethering using the variance of RTT.
-        e.g. when variance of RTT to the same destination is larger than some threshold
+    b) detect_tethering_TTL.pl
+        Read in results from "analyze_sprint_text.pl" and detect TTL tethering usage.
+            a) > 1 TTL across the whole trace
+            b) > 1 TTL at any second
 
-    - input: file_id
-        The file ID of 3-hr Sprint Mobile Dataset.
-        This program uses this ID to look up the output files from "analyze_sprint_tcp_rtt.pl", i.e.
-        ./output/
-        file.<id>.rtts.txt: 
-        the RTT to different destinations
-        format:
-        <src ip>, <dst ip>, <RTTs>
+        - input: file_id
+            The file ID of 3-hr Sprint Mobile Dataset.
+            This program uses this ID to look up the output files from "analyze_sprint_text.pl", i.e.
+            ./output/
+            a) file.<id>.ttl.txt
+                TTLs of each flow
+            b) file.<id>.ttl.ts.txt
+                timeseries of # of unique TTLs of each flow
 
-    - output:
-        IP of tethered clients.
-        ./tethered_clients/RTT_variance.threshold<threshold>.<file id>.txt
+        - output:
+            IP of tethered clients.
+            a) ./tethered_clients/TTL_whole_trace.<file id>.txt
+            b) ./tethered_clients/TTL_one_second.<file id>.txt
+
+    c) detect_tethering_connections.pl
+        Read in results from "analyze_sprint_tcp_connections.pl" and detect tethering using number of connections.
+            e.g. > n connections at any time using time bin size b
+
+        - input: file_id
+            The file ID of 3-hr Sprint Mobile Dataset.
+            This program uses this ID to look up the output files from "analyze_sprint_tcp_connections.pl", i.e.
+            ./output/
+            a) file.<id>.connections.bin<time bin size>.txt
+                timeseries of # of connections
+
+        - output:
+            IP of tethered clients.
+            ./tethered_clients/Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 
 
-5.4 detect_tethering_inter_arrival_time.pl
-    Read in results from "analyze_sprint_text_inter_arrival_time.pl" and detect tethering usage by inter-arrival time.
-    a) The mean of inter-arrival time is smaller than some threshold
-    b) The stdev of inter-arrival time is larger than some threshold
+    d) detect_tethering_rtt.pl
+        Read in results from "analyze_sprint_tcp_rtt.pl" and detect tethering using the variance of RTT.
+            e.g. when variance of RTT to the same destination is larger than some threshold
+
+        - input: file_id
+            The file ID of 3-hr Sprint Mobile Dataset.
+            This program uses this ID to look up the output files from "analyze_sprint_tcp_rtt.pl", i.e.
+            ./output/
+            file.<id>.rtts.txt: 
+            the RTT to different destinations
+            format:
+            <src ip>, <dst ip>, <RTTs>
+
+        - output:
+            IP of tethered clients.
+            ./tethered_clients/RTT_variance.threshold<threshold>.<file id>.txt
 
 
-5.5 detect_tethering_tput.pl
-    Read in results from "analyze_sprint_text.pl" and detect tethering usage by throughput.
-    e.g. The tput is larger than some threshold
+    e) detect_tethering_inter_arrival_time.pl
+        Read in results from "analyze_sprint_text_inter_arrival_time.pl" and detect tethering usage by inter-arrival time.
+        a) The mean of inter-arrival time is smaller than some threshold
+        b) The stdev of inter-arrival time is larger than some threshold
 
 
-5.6 detect_tethering_pkt_len_entropy.pl
-    Read in results from "analyze_sprint_text.pl" and detect tethering usage by entropy of pkt length.
-    e.g. The entropy is larger than some threshold
+    f) detect_tethering_tput.pl
+        Read in results from "analyze_sprint_text.pl" and detect tethering usage by throughput.
+        e.g. The tput is larger than some threshold
 
 
-6. cross_validate_detected_ip.pl
+    g) detect_tethering_pkt_len_entropy.pl
+        Read in results from "analyze_sprint_text.pl" and detect tethering usage by entropy of pkt length.
+        e.g. The entropy is larger than some threshold
+
+    i) detect_tethering_TTL_default_value.pl
+        Read in results from "analyze_sprint_text.pl" and detect TTL tethering usage.
+        e.g. TTL != 63, 127, or 254
+
+
+4. cross_validate_detected_ip.pl
     Read IPs of tethered clients detected by different methods, and cross-validate the overlapping
 
     - input: 
         IP of tethered clients.
+        Possible base:
         a) TTL (whole trace): ./tethered_clients/TTL_whole_trace.<file id>.txt
         b) TTL (one second) : ./tethered_clients/TTL_one_second.<file id>.txt
+        c) TTL (default value) : TTL_default_value.<file id>.txt
+        d) User Agent : User_agent.<file id>.txt
+        e) TTL (diff) : TTL_diff.<file id>.txt
+
+        Evaluation Methods:
         c) Connections : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 5, 10, 60, 600)
             Thresholds = (2 .. 30)
@@ -314,6 +341,12 @@
         h) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 600)
             Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
+        g) UDP Connections : UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+            Time bins  = (1, 5, 10, 60, 600)
+            Thresholds = (2 .. 30)
+        h) TCP/UDP Connections : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+            Time bins  = (1, 5, 10, 60, 600)
+            Thresholds = (2 .. 30)
 
     - output:
         a) How many clients are detected by 1/2/3/4/5... methods
@@ -325,13 +358,19 @@
             format:
             <method1> <method2> <overlap> <only by former> <only by latter> <# total detected clients> <overlap ratio> <only by former ratio> <only by latter ratio>
 
-7. evaluate_methods_based_on_TTL.pl
+5. evaluate_methods_based_on_TTL.pl
     There are many methods to detect tehtering. This program use TTL heuristic as ground truth, and calculate precision and recall of other methods with various parameters (e.g. diff thresholds)
 
     - input: 
         IP of tethered clients.
+        Possible base:
         a) TTL (whole trace): ./tethered_clients/TTL_whole_trace.<file id>.txt
         b) TTL (one second) : ./tethered_clients/TTL_one_second.<file id>.txt
+        c) TTL (default value) : TTL_default_value.<file id>.txt
+        d) User Agent : User_agent.<file id>.txt
+        e) TTL (diff) : TTL_diff.<file id>.txt
+
+        Evaluation Methods:
         c) Connections : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 5, 10, 60, 600)
             Thresholds = (2 .. 30)
@@ -346,14 +385,20 @@
         h) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 600)
             Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
+        g) UDP Connections : UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+            Time bins  = (1, 5, 10, 60, 600)
+            Thresholds = (2 .. 30)
+        h) TCP/UDP Connections : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+            Time bins  = (1, 5, 10, 60, 600)
+            Thresholds = (2 .. 30)
 
     - output:
-        a) ./tethered_clients/process_output
+        a) ./tethered_clients_processed_data
         format:
         <threshold> <TP> <FN> <FP> <TN> <precision> <recall>
 
         b) figure: plot PR curve (Precision-Recall) using plot_pr.plot.mother
-        ./tethered_clients/process_output/
+        ./tethered_clients_figures/
 
 
 
@@ -414,12 +459,12 @@
 2. implement change point detection method
 3. coefficient between confidence indicators
 4. Detection codes
-5. subtask_tether_ttl_diff
+5. figure out the packets with abnormal TTL
 
 
 
 /***************
- * run jobs:
+ * jobs logs:
 ***************/
 - pcapParser (fix a bug about fragments) ............................ done
     batch_analyze_sprint_text.sh  ................................... done
@@ -429,6 +474,7 @@
         batch_detect_tethering_inter_arrival_time.sh ................ done
         batch_detect_tethering_pkt_len_entropy.sh  .................. done
         batch_detect_tethering_tput.sh  ............................. done
+        batch_detect_tethering_TTL_default_value.sh  ................ done
 
 - pcapParser2 (fix a bug about fragments) ........................... done
     batch_analyze_sprint_tcp_connections.sh  ........................ done
@@ -437,6 +483,27 @@
         batch_detect_tethering_rtt.sh  .............................. done
     subtask_tcp_seq_ack/batch_analyze_sprint_tcp_seq.sh ............. done
 
--       batch_cross_validation.sh
-        batch_evaluate_methods_based_on_TTL.sh
+- batch_pcapParser3.sh  ............................................. done
+    batch_analyze_sprint_http_user_agents.sh  ....................... done
+        batch_detect_tethering_user_agent.sh  ....................... done
+
+- batch_pcapParser4.sh  ............................................. done
+    batch_analyze_sprint_udp_connections.sh  ........................ done
+        batch_detect_tethering_udp_connections.sh  .................. done
+    batch_analyze_sprint_tcp_udp_connections.sh  .................... done
+        batch_detect_tethering_tcp_udp_connections.sh  .............. done
+
+-       batch_evaluate_methods_based_on_TTL.sh  ..................... done
+        batch_cross_validation.sh  .................................. done
+
+
+
+/***************
+ * note:
+***************/
+1. The tethering detection methods are applied for all IPs in the trace, including clients and servers.
+    It's meaningless to check the tethering of servers and the methods may not make sense (e.g. TTL is collected in client side and varies depending on the route.)
+    So, during the evaluation, I didn't count the IPs which are not from cellular network (i.e. 28.XXX.XXX.XXX)
+
+
 

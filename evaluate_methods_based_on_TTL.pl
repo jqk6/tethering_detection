@@ -11,28 +11,43 @@
 ## - input: 
 ##     ./tethered_clients/
 ##     IP of tethered clients
+##      Possible base:
 ##      a) TTL (whole trace)         : TTL_whole_trace.<file id>.txt
 ##      b) TTL (one second)          : TTL_one_second.<file id>.txt
-##      c) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##      c) TTL (default value)       : TTL_default_value.<file id>.txt
+##      d) User Agent                : User_agent.<file id>.txt
+##      e) TTL (diff)                : TTL_diff.<file id>.txt
+##
+##      Evaluation Methods
+##      a) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                                     Time bins  = (1, 5, 10, 60, 600)
 ##                                     Thresholds = (2 .. 30)
-##      d) RTT (variance)            : RTT_variance.threshold<threshold>.<file id>.txt
+##      b) RTT (variance)            : RTT_variance.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8)
-##      e) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
+##      c) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, .. , 4)
-##      f) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
+##      d) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
-##      g) Throughput                : Tput_whole_trace.threshold<threshold>.<file id>.txt
+##      e) Throughput                : Tput_whole_trace.threshold<threshold>.<file id>.txt
 ##                                     Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
-##      h) Pkt length Entropy        : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
+##      f) Pkt length Entropy        : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                                     Time bins  = (1, 600)
 ##                                     Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
+##      g) UDP Connections           : UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 5, 10, 60, 600)
+##                                     Thresholds = (2 .. 30)
+##      h) TCP/UDP Connections       : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                                     Time bins  = (1, 5, 10, 60, 600)
+##                                     Thresholds = (2 .. 30)
 ##
 ## - output:
 ##      PR curve (Precision-Recall)
-##      ./tethered_clients/process_output/
+##      1) raw data:
+##        ./tethered_clients_processed_data/
 ##        format:
 ##        <threshold> <TP> <FN> <FP> <TN> <precision> <recall>
+##      2) figures:
+##        ./tethered_clients_figures/
 ##
 ##  e.g.
 ##      perl evaluate_methods_based_on_TTL.pl 49
@@ -51,15 +66,18 @@ my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
 my $DEBUG2 = 1; ## print for debug
 
+my $FILTERED_SRC_IP = 1;    ## in the trace, some packets are from clients and some are from servers
+                            ## we are not interested in those from servers
+                            ## it seems the clients from cellular network (Sprint) have IP: 28.XXX.XXX.XXX
 
 
 #####
 ## variables
 my $input_dir = "./tethered_clients";
 my $input_all_client_dir = "./output";
-my $output_dir = "./tethered_clients/process_output";
-my $based_method = "TTL_one_second";
-    # possible base: "TTL_one_second", "TTL_whole_trace"
+my $output_dir = "./tethered_clients_processed_data";
+my @base_methods = ("TTL_one_second", "TTL_whole_trace", "TTL_default_value", "TTL_diff", "User_agent");
+
 
 my $file_id;
 
@@ -93,6 +111,10 @@ my $file_name = "file.$file_id.ttl.txt";
 open FH, "$input_all_client_dir/$file_name" or die $!;
 while(<FH>) {
     my ($ip, @others) = split(/, /, $_);
+    
+    if($FILTERED_SRC_IP == 1) {
+        next if(!($ip =~ /^28\./));
+    }
 
     %{ $tether_info{IP}{$ip} } = ();
 }
@@ -111,58 +133,129 @@ if($DEBUG1) {
 ##############################################################################
 ## detected IPs of each method
 ##############################################################################
-
-
-##############################################################################
+print "detected IPs of each method\n" if($DEBUG2);
 ## a) TTL (whole trace): TTL_whole_trace.<file id>.txt
-my $method_name = "TTL_whole_trace";
-$file_name = "$method_name.$file_id.txt";
-open FH, "$input_dir/$file_name" or die $!;
-while(my $this_ip = <FH>) {
-    chomp $this_ip;
-    print $this_ip."\n" if($DEBUG1);
-
-
-    ## DEBUG
-    die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
-
-    $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
-}
-close FH;
-
-
-##############################################################################
 ## b) TTL (one second) : TTL_one_second.<file id>.txt
-$method_name = "TTL_one_second";
-$file_name = "$method_name.$file_id.txt";
-open FH, "$input_dir/$file_name" or die $!;
-while(my $this_ip = <FH>) {
-    chomp $this_ip;
-    print $this_ip."\n" if($DEBUG1);
+## c) TTL (default value) : TTL_default_value.<file id>.txt
+## d) User Agent : User_agent.<file id>.txt
+## e) TTL (diff): TTL_diff.<file id>.txt
+foreach my $method_name (@base_methods) {
+    $file_name = "$method_name.$file_id.txt";
+    open FH, "$input_dir/$file_name" or die $!;
+    while(my $this_ip = <FH>) {
+        chomp $this_ip;
+        print $this_ip."\n" if($DEBUG1);
+
+        if($FILTERED_SRC_IP == 1) {
+            next if(!($this_ip =~ /^28\./));
+        }
 
 
-    ## DEBUG
-    die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+        ## DEBUG
+        die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
 
-    $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+        $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+    }
+    close FH;
 }
-close FH;
+
 
 
 ##############################################################################
-## c) Connections: Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+## a) Connections: Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                 Time bins  = (1, 5, 10, 60, 600)
 ##                 Thresholds = (2 .. 30)
+print "a) Connections\n" if($DEBUG2);
+
 my @conntions_time_bins = (1, 5, 10, 60, 600);
 my @connections_thresholds = (2 .. 30);
-foreach my $this_timebin (@conntions_time_bins) {
-    my $conn_output_file = "Connections_timebin$this_timebin.PR.$file_id.txt";
-    open FH_PR, "> $output_dir/$conn_output_file" or die $!;
 
-    foreach my $this_threshold (@connections_thresholds) {
-        $method_name = "Connections_timebin$this_timebin.threshold$this_threshold";
+foreach my $based_method (@base_methods) {
+
+    foreach my $this_timebin (@conntions_time_bins) {
+        my $conn_output_file = "Connections_timebin$this_timebin.base_$based_method.PR.$file_id.txt";
+        open FH_PR, "> $output_dir/$conn_output_file" or die $!;
+
+        foreach my $this_threshold (@connections_thresholds) {
+            my $method_name = "Connections_timebin$this_timebin.threshold$this_threshold";
+            $file_name = "$method_name.$file_id.txt";
+            
+
+            #####
+            ## read in data
+            open FH, "$input_dir/$file_name" or die $!;
+            while(my $this_ip = <FH>) {
+                chomp $this_ip;
+                print $this_ip."\n" if($DEBUG1);
+
+                if($FILTERED_SRC_IP == 1) {
+                    next if(!($this_ip =~ /^28\./));
+                }
+
+
+                ## DEBUG
+                die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+                $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+            }
+            close FH;
+
+
+            #####
+            ## statistics
+            (
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+            $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+            $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+
+
+            #####
+            ## output
+            print FH_PR join(", ", ($this_threshold, 
+                $tether_info{METHOD}{$method_name}{TP}, 
+                $tether_info{METHOD}{$method_name}{FN}, 
+                $tether_info{METHOD}{$method_name}{FP}, 
+                $tether_info{METHOD}{$method_name}{TN},
+                $tether_info{METHOD}{$method_name}{PRECISION},
+                $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+        }
+
+        close FH_PR;
+    }
+}
+
+
+
+##############################################################################
+## b) RTT (variance): RTT_variance.threshold<threshold>.<file id>.txt
+##                    Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8);
+print "b) RTT (variance)\n" if($DEBUG2);
+my @rtt_thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8);
+
+foreach my $based_method (@base_methods) {
+
+    my $rtt_output_file = "RTT_variance.base_$based_method.PR.$file_id.txt";
+    open FH_PR, "> $output_dir/$rtt_output_file" or die $!;
+
+    foreach my $this_threshold (@rtt_thresholds) {
+        my $method_name = "RTT_variance.threshold$this_threshold";
         $file_name = "$method_name.$file_id.txt";
-        
+
 
         #####
         ## read in data
@@ -170,6 +263,10 @@ foreach my $this_timebin (@conntions_time_bins) {
         while(my $this_ip = <FH>) {
             chomp $this_ip;
             print $this_ip."\n" if($DEBUG1);
+
+            if($FILTERED_SRC_IP == 1) {
+                next if(!($this_ip =~ /^28\./));
+            }
 
 
             ## DEBUG
@@ -213,286 +310,25 @@ foreach my $this_timebin (@conntions_time_bins) {
             $tether_info{METHOD}{$method_name}{PRECISION},
             $tether_info{METHOD}{$method_name}{RECALL}))."\n";
     }
-
     close FH_PR;
 }
 
 
-
 ##############################################################################
-## d) RTT (variance): RTT_variance.threshold<threshold>.<file id>.txt
-##                    Thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, .. , 0.8);
-my @rtt_thresholds = (0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8);
-
-my $rtt_output_file = "RTT_variance.PR.$file_id.txt";
-open FH_PR, "> $output_dir/$rtt_output_file" or die $!;
-
-foreach my $this_threshold (@rtt_thresholds) {
-    $method_name = "RTT_variance.threshold$this_threshold";
-    $file_name = "$method_name.$file_id.txt";
-
-
-    #####
-    ## read in data
-    open FH, "$input_dir/$file_name" or die $!;
-    while(my $this_ip = <FH>) {
-        chomp $this_ip;
-        print $this_ip."\n" if($DEBUG1);
-
-
-        ## DEBUG
-        die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
-
-        $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
-    }
-    close FH;
-
-
-    #####
-    ## statistics
-    (
-     $tether_info{METHOD}{$method_name}{TP}, 
-     $tether_info{METHOD}{$method_name}{FN}, 
-     $tether_info{METHOD}{$method_name}{FP}, 
-     $tether_info{METHOD}{$method_name}{TN}
-    ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
-
-    $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-    $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-
-
-    #####
-    ## output
-    print FH_PR join(", ", ($this_threshold, 
-        $tether_info{METHOD}{$method_name}{TP}, 
-        $tether_info{METHOD}{$method_name}{FN}, 
-        $tether_info{METHOD}{$method_name}{FP}, 
-        $tether_info{METHOD}{$method_name}{TN},
-        $tether_info{METHOD}{$method_name}{PRECISION},
-        $tether_info{METHOD}{$method_name}{RECALL}))."\n";
-}
-close FH_PR;
-
-
-##############################################################################
-## e) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
+## c) Inter-arrival time (mean) : Inter_arrival_time_mean.threshold<threshold>.<file id>.txt
 ##                                Thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, .. , 4)
+print "c) Inter-arrival time (mean) \n" if($DEBUG2);
+
 my @thresholds = (0.005, 0.01, 0.02, 0.03, 0.05, 0.07, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 3, 4);
 
-my $output_file = "Inter_arrival_time_mean.PR.$file_id.txt";
-open FH_PR, "> $output_dir/$output_file" or die $!;
-
-foreach my $this_threshold (@thresholds) {
-    $method_name = "Inter_arrival_time_mean.threshold$this_threshold";
-    $file_name = "$method_name.$file_id.txt";
-
-
-    #####
-    ## read in data
-    open FH, "$input_dir/$file_name" or die $!;
-    while(my $this_ip = <FH>) {
-        chomp $this_ip;
-        print $this_ip."\n" if($DEBUG1);
-
-
-        ## DEBUG
-        die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
-
-        $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
-    }
-    close FH;
-
-
-    #####
-    ## statistics
-    (
-     $tether_info{METHOD}{$method_name}{TP}, 
-     $tether_info{METHOD}{$method_name}{FN}, 
-     $tether_info{METHOD}{$method_name}{FP}, 
-     $tether_info{METHOD}{$method_name}{TN}
-    ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
-
-    $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-    $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-
-
-    #####
-    ## output
-    print FH_PR join(", ", ($this_threshold, 
-        $tether_info{METHOD}{$method_name}{TP}, 
-        $tether_info{METHOD}{$method_name}{FN}, 
-        $tether_info{METHOD}{$method_name}{FP}, 
-        $tether_info{METHOD}{$method_name}{TN},
-        $tether_info{METHOD}{$method_name}{PRECISION},
-        $tether_info{METHOD}{$method_name}{RECALL}))."\n";
-}
-close FH_PR;
-
-
-##############################################################################
-## f) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
-##                                Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
-@thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10);
-
-$output_file = "Inter_arrival_time_stdev.PR.$file_id.txt";
-open FH_PR, "> $output_dir/$output_file" or die $!;
-
-foreach my $this_threshold (@thresholds) {
-    $method_name = "Inter_arrival_time_stdev.threshold$this_threshold";
-    $file_name = "$method_name.$file_id.txt";
-
-
-    #####
-    ## read in data
-    open FH, "$input_dir/$file_name" or die $!;
-    while(my $this_ip = <FH>) {
-        chomp $this_ip;
-        print $this_ip."\n" if($DEBUG1);
-
-
-        ## DEBUG
-        die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
-
-        $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
-    }
-    close FH;
-
-
-    #####
-    ## statistics
-    (
-     $tether_info{METHOD}{$method_name}{TP}, 
-     $tether_info{METHOD}{$method_name}{FN}, 
-     $tether_info{METHOD}{$method_name}{FP}, 
-     $tether_info{METHOD}{$method_name}{TN}
-    ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
-
-    $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-    $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-
-
-    #####
-    ## output
-    print FH_PR join(", ", ($this_threshold, 
-        $tether_info{METHOD}{$method_name}{TP}, 
-        $tether_info{METHOD}{$method_name}{FN}, 
-        $tether_info{METHOD}{$method_name}{FP}, 
-        $tether_info{METHOD}{$method_name}{TN},
-        $tether_info{METHOD}{$method_name}{PRECISION},
-        $tether_info{METHOD}{$method_name}{RECALL}))."\n";
-}
-close FH_PR;
-
-
-##############################################################################
-## g) Throughput : Tput_whole_trace.threshold<threshold>.<file id>.txt
-##                 Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
-@thresholds = (10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 3000, 5000, 10000);
-
-$output_file = "Tput_whole_trace.PR.$file_id.txt";
-open FH_PR, "> $output_dir/$output_file" or die $!;
-
-foreach my $this_threshold (@thresholds) {
-    $method_name = "Tput_whole_trace.threshold$this_threshold";
-    $file_name = "$method_name.$file_id.txt";
-
-
-    #####
-    ## read in data
-    open FH, "$input_dir/$file_name" or die $!;
-    while(my $this_ip = <FH>) {
-        chomp $this_ip;
-        print $this_ip."\n" if($DEBUG1);
-
-
-        ## DEBUG
-        die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
-
-        $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
-    }
-    close FH;
-
-
-    #####
-    ## statistics
-    (
-     $tether_info{METHOD}{$method_name}{TP}, 
-     $tether_info{METHOD}{$method_name}{FN}, 
-     $tether_info{METHOD}{$method_name}{FP}, 
-     $tether_info{METHOD}{$method_name}{TN}
-    ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
-
-    $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-    $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
-         $tether_info{METHOD}{$method_name}{TP}, 
-         $tether_info{METHOD}{$method_name}{FN}, 
-         $tether_info{METHOD}{$method_name}{FP}, 
-         $tether_info{METHOD}{$method_name}{TN}
-        );
-
-
-    #####
-    ## output
-    print FH_PR join(", ", ($this_threshold, 
-        $tether_info{METHOD}{$method_name}{TP}, 
-        $tether_info{METHOD}{$method_name}{FN}, 
-        $tether_info{METHOD}{$method_name}{FP}, 
-        $tether_info{METHOD}{$method_name}{TN},
-        $tether_info{METHOD}{$method_name}{PRECISION},
-        $tether_info{METHOD}{$method_name}{RECALL}))."\n";
-}
-close FH_PR;
-
-
-##############################################################################
-## h) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
-##                         Time bins  = (1, 600)
-##                         Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
-my @time_bins = (1, 600);
-@thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.25, 0.3, 0.5, 0.7, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2);
-foreach my $this_timebin (@time_bins) {
-    my $output_file = "Pkt_len_entropy.timebin$this_timebin.PR.$file_id.txt";
+foreach my $based_method (@base_methods) {
+    my $output_file = "Inter_arrival_time_mean.base_$based_method.PR.$file_id.txt";
     open FH_PR, "> $output_dir/$output_file" or die $!;
 
     foreach my $this_threshold (@thresholds) {
-        $method_name = "Pkt_len_entropy.timebin$this_timebin.threshold$this_threshold";
+        my $method_name = "Inter_arrival_time_mean.threshold$this_threshold";
         $file_name = "$method_name.$file_id.txt";
-        
+
 
         #####
         ## read in data
@@ -500,6 +336,10 @@ foreach my $this_timebin (@time_bins) {
         while(my $this_ip = <FH>) {
             chomp $this_ip;
             print $this_ip."\n" if($DEBUG1);
+
+            if($FILTERED_SRC_IP == 1) {
+                next if(!($this_ip =~ /^28\./));
+            }
 
 
             ## DEBUG
@@ -543,8 +383,382 @@ foreach my $this_timebin (@time_bins) {
             $tether_info{METHOD}{$method_name}{PRECISION},
             $tether_info{METHOD}{$method_name}{RECALL}))."\n";
     }
-
     close FH_PR;
+}
+
+
+##############################################################################
+## d) Inter-arrival time (stdev): Inter_arrival_time_stdev.threshold<threshold>.<file id>.txt
+##                                Thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, .. , 10)
+print "d) Inter-arrival time (stdev)\n" if($DEBUG2);
+
+@thresholds = (0.005, 0.01, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10);
+
+foreach my $based_method (@base_methods) {
+    my $output_file = "Inter_arrival_time_stdev.base_$based_method.PR.$file_id.txt";
+    open FH_PR, "> $output_dir/$output_file" or die $!;
+
+    foreach my $this_threshold (@thresholds) {
+        my $method_name = "Inter_arrival_time_stdev.threshold$this_threshold";
+        $file_name = "$method_name.$file_id.txt";
+
+
+        #####
+        ## read in data
+        open FH, "$input_dir/$file_name" or die $!;
+        while(my $this_ip = <FH>) {
+            chomp $this_ip;
+            print $this_ip."\n" if($DEBUG1);
+
+            if($FILTERED_SRC_IP == 1) {
+                next if(!($this_ip =~ /^28\./));
+            }
+
+
+            ## DEBUG
+            die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+            $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+        }
+        close FH;
+
+
+        #####
+        ## statistics
+        (
+         $tether_info{METHOD}{$method_name}{TP}, 
+         $tether_info{METHOD}{$method_name}{FN}, 
+         $tether_info{METHOD}{$method_name}{FP}, 
+         $tether_info{METHOD}{$method_name}{TN}
+        ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+        $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            );
+        $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            );
+
+
+        #####
+        ## output
+        print FH_PR join(", ", ($this_threshold, 
+            $tether_info{METHOD}{$method_name}{TP}, 
+            $tether_info{METHOD}{$method_name}{FN}, 
+            $tether_info{METHOD}{$method_name}{FP}, 
+            $tether_info{METHOD}{$method_name}{TN},
+            $tether_info{METHOD}{$method_name}{PRECISION},
+            $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+    }
+    close FH_PR;
+}
+
+
+##############################################################################
+## e) Throughput : Tput_whole_trace.threshold<threshold>.<file id>.txt
+##                 Thresholds = (10, 15, 20, 25, 30, 40, 50, 60, .. , 10000)
+print "e) Throughput\n" if($DEBUG2);
+
+@thresholds = (10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 3000, 5000, 10000);
+
+foreach my $based_method (@base_methods) {
+    my $output_file = "Tput_whole_trace.base_$based_method.PR.$file_id.txt";
+    open FH_PR, "> $output_dir/$output_file" or die $!;
+
+    foreach my $this_threshold (@thresholds) {
+        my $method_name = "Tput_whole_trace.threshold$this_threshold";
+        $file_name = "$method_name.$file_id.txt";
+
+
+        #####
+        ## read in data
+        open FH, "$input_dir/$file_name" or die $!;
+        while(my $this_ip = <FH>) {
+            chomp $this_ip;
+            print $this_ip."\n" if($DEBUG1);
+
+            if($FILTERED_SRC_IP == 1) {
+                next if(!($this_ip =~ /^28\./));
+            }
+
+
+            ## DEBUG
+            die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+            $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+        }
+        close FH;
+
+
+        #####
+        ## statistics
+        (
+         $tether_info{METHOD}{$method_name}{TP}, 
+         $tether_info{METHOD}{$method_name}{FN}, 
+         $tether_info{METHOD}{$method_name}{FP}, 
+         $tether_info{METHOD}{$method_name}{TN}
+        ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+        $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            );
+        $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            );
+
+
+        #####
+        ## output
+        print FH_PR join(", ", ($this_threshold, 
+            $tether_info{METHOD}{$method_name}{TP}, 
+            $tether_info{METHOD}{$method_name}{FN}, 
+            $tether_info{METHOD}{$method_name}{FP}, 
+            $tether_info{METHOD}{$method_name}{TN},
+            $tether_info{METHOD}{$method_name}{PRECISION},
+            $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+    }
+    close FH_PR;
+}
+
+
+##############################################################################
+## f) Pkt length Entropy : Pkt_len_entropy.timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                         Time bins  = (1, 600)
+##                         Thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, .. , 2)
+print "f) Pkt length Entropy\n" if($DEBUG2);
+
+my @time_bins = (1, 600);
+@thresholds = (0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.25, 0.3, 0.5, 0.7, 0.9, 1, 1.2, 1.4, 1.6, 1.8, 2);
+
+foreach my $based_method (@base_methods) {
+    foreach my $this_timebin (@time_bins) {
+        my $output_file = "Pkt_len_entropy.timebin$this_timebin.base_$based_method.PR.$file_id.txt";
+        open FH_PR, "> $output_dir/$output_file" or die $!;
+
+        foreach my $this_threshold (@thresholds) {
+            my $method_name = "Pkt_len_entropy.timebin$this_timebin.threshold$this_threshold";
+            $file_name = "$method_name.$file_id.txt";
+            
+
+            #####
+            ## read in data
+            open FH, "$input_dir/$file_name" or die $!;
+            while(my $this_ip = <FH>) {
+                chomp $this_ip;
+                print $this_ip."\n" if($DEBUG1);
+
+                if($FILTERED_SRC_IP == 1) {
+                    next if(!($this_ip =~ /^28\./));
+                }
+
+
+                ## DEBUG
+                die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+                $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+            }
+            close FH;
+
+
+            #####
+            ## statistics
+            (
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+            $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+            $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+
+
+            #####
+            ## output
+            print FH_PR join(", ", ($this_threshold, 
+                $tether_info{METHOD}{$method_name}{TP}, 
+                $tether_info{METHOD}{$method_name}{FN}, 
+                $tether_info{METHOD}{$method_name}{FP}, 
+                $tether_info{METHOD}{$method_name}{TN},
+                $tether_info{METHOD}{$method_name}{PRECISION},
+                $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+        }
+
+        close FH_PR;
+    }
+}
+
+
+##############################################################################
+## g) UDP Connections: UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                     Time bins  = (1, 5, 10, 60, 600)
+##                     Thresholds = (2 .. 30)
+# @conntions_time_bins and @connections_thresholds are the same as TCP Connections
+print "g) UDP Connections\n" if($DEBUG2);
+foreach my $based_method (@base_methods) {
+    foreach my $this_timebin (@conntions_time_bins) {
+        my $conn_output_file = "UDP_Connections_timebin$this_timebin.base_$based_method.PR.$file_id.txt";
+        open FH_PR, "> $output_dir/$conn_output_file" or die $!;
+
+        foreach my $this_threshold (@connections_thresholds) {
+            my $method_name = "UDP_Connections_timebin$this_timebin.threshold$this_threshold";
+            $file_name = "$method_name.$file_id.txt";
+            
+
+            #####
+            ## read in data
+            open FH, "$input_dir/$file_name" or die $!;
+            while(my $this_ip = <FH>) {
+                chomp $this_ip;
+                print $this_ip."\n" if($DEBUG1);
+
+                if($FILTERED_SRC_IP == 1) {
+                    next if(!($this_ip =~ /^28\./));
+                }
+
+
+                ## DEBUG
+                die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+                $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+            }
+            close FH;
+
+
+            #####
+            ## statistics
+            (
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+            $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+            $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+
+
+            #####
+            ## output
+            print FH_PR join(", ", ($this_threshold, 
+                $tether_info{METHOD}{$method_name}{TP}, 
+                $tether_info{METHOD}{$method_name}{FN}, 
+                $tether_info{METHOD}{$method_name}{FP}, 
+                $tether_info{METHOD}{$method_name}{TN},
+                $tether_info{METHOD}{$method_name}{PRECISION},
+                $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+        }
+
+        close FH_PR;
+    }
+}
+
+
+
+##############################################################################
+## h) TCP/UDP Connections: TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
+##                     Time bins  = (1, 5, 10, 60, 600)
+##                     Thresholds = (2 .. 30)
+# @conntions_time_bins and @connections_thresholds are the same as TCP Connections
+print "h) TCP/UDP Connections\n" if($DEBUG2);
+foreach my $based_method (@base_methods) {
+    foreach my $this_timebin (@conntions_time_bins) {
+        my $conn_output_file = "TCP_UDP_Connections_timebin$this_timebin.base_$based_method.PR.$file_id.txt";
+        open FH_PR, "> $output_dir/$conn_output_file" or die $!;
+
+        foreach my $this_threshold (@connections_thresholds) {
+            my $method_name = "TCP_UDP_Connections_timebin$this_timebin.threshold$this_threshold";
+            $file_name = "$method_name.$file_id.txt";
+            
+
+            #####
+            ## read in data
+            open FH, "$input_dir/$file_name" or die $!;
+            while(my $this_ip = <FH>) {
+                chomp $this_ip;
+                print $this_ip."\n" if($DEBUG1);
+
+                if($FILTERED_SRC_IP == 1) {
+                    next if(!($this_ip =~ /^28\./));
+                }
+
+
+                ## DEBUG
+                die "no such IP: $this_ip\n" if(!(exists $tether_info{IP}{$this_ip}));
+
+                $tether_info{IP}{$this_ip}{METHOD}{$method_name} = 1;
+            }
+            close FH;
+
+
+            #####
+            ## statistics
+            (
+             $tether_info{METHOD}{$method_name}{TP}, 
+             $tether_info{METHOD}{$method_name}{FN}, 
+             $tether_info{METHOD}{$method_name}{FP}, 
+             $tether_info{METHOD}{$method_name}{TN}
+            ) = cal_confusion_matrix($based_method, $method_name, \%tether_info);
+
+            $tether_info{METHOD}{$method_name}{PRECISION} = MyUtil::precision(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+            $tether_info{METHOD}{$method_name}{RECALL} = MyUtil::recall(
+                 $tether_info{METHOD}{$method_name}{TP}, 
+                 $tether_info{METHOD}{$method_name}{FN}, 
+                 $tether_info{METHOD}{$method_name}{FP}, 
+                 $tether_info{METHOD}{$method_name}{TN}
+                );
+
+
+            #####
+            ## output
+            print FH_PR join(", ", ($this_threshold, 
+                $tether_info{METHOD}{$method_name}{TP}, 
+                $tether_info{METHOD}{$method_name}{FN}, 
+                $tether_info{METHOD}{$method_name}{FP}, 
+                $tether_info{METHOD}{$method_name}{TN},
+                $tether_info{METHOD}{$method_name}{PRECISION},
+                $tether_info{METHOD}{$method_name}{RECALL}))."\n";
+        }
+
+        close FH_PR;
+    }
 }
 
 
@@ -552,9 +766,11 @@ foreach my $this_timebin (@time_bins) {
 
 ###########################################
 ## plot the figures
-system("sed 's/FILE_ID/$file_id/;' plot_pr.plot.mother > plot_pr.plot");
-system("gnuplot plot_pr.plot");
-system("rm plot_pr.plot");
+foreach my $based_method (@base_methods) {
+    system("sed 's/FILE_ID/$file_id/;s/BASE_METHOD/$based_method/' plot_pr.plot.mother > plot_pr.plot");
+    system("gnuplot plot_pr.plot");
+    system("rm plot_pr.plot");
+}
 
 1;
 
