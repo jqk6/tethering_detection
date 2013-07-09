@@ -1,11 +1,12 @@
 // ---------------------------------------------------------
 //
-// find_tcp_timestamp
+// pcapParser5
+//   copied form find_tcp_timestamp.c
 //
 //  reads in a pcap file and find if there is timestamp option
 //
 //  e.g.
-//      ./find_tcp_timestamp ~/testbed/exp2/pcap/2013.06.24.AP.pcap
+//      ./find_tcp_timestamp /data/ychen/sprint/pcap/omni.out.49.eth.pcap
 //
 // ---------------------------------------------------------
 

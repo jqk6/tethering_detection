@@ -108,6 +108,49 @@
             ignore IP-ENCAP, IP fragmentation
 
 
+    c) pcapParser3.c
+        List all the User-Agent from http header of each user
+        - input: pcap_file
+        - output: 
+            format
+            <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len>
+            <http header>
+            <new line>
+
+
+        - batch_pcapParser3.sh
+            - run pcapParser3.c in batch
+            - input files: /data/ychen/sprint/pcap
+            - output files: /data/ychen/sprint/text3
+
+
+    d) pcapParser4.c
+        reads in a pcap file and outputs "UDP" info
+        - input: pcap_file
+        - output: 
+            format
+            <time> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <length>
+
+
+        - batch_pcapParser4.sh
+            - run pcapParser4.c in batch
+            - input files: /data/ychen/sprint/pcap
+            - output files: /data/ychen/sprint/text4
+
+
+    e) pcapParser5.c
+        reads in a pcap file and find if there is timestamp option
+        - input: pcap_file
+        - output: 
+            format
+            <time> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len> <timestamp> <timestamp reply>
+
+
+        - batch_pcapParser5.sh
+            - run pcapParser5.c in batch
+            - input files: /data/ychen/sprint/pcap
+            - output files: /data/ychen/sprint/text5
+
 
 2. 
     a) analyze_sprint_text.pl
