@@ -71,6 +71,21 @@
 5. subtask_http_agents
     List all the User-Agent from http header of each user
 
+6. subtask_clock_skew
+    Calculate the clock skew using TCP Timestamp.
+
+7. subtask_boot_time
+    Calculate the boot time using TCP Timestamp option.
+
+    a) group_by_tcp_timestamp.pl
+       Read the processed pcap file (which includes TCP Timestamp) and calculate the Timestamp of some time t.
+       It also output the calculated Timestamp of each IP.
+
+    b) group_by_tcp_timestamp.m
+       Read the output of "group_by_tcp_timestamp.pl" and use K-Means to classify calculated Timestamps.
+       Then it uses "partition index" to determine which number of partition yields best clustering.
+
+
 
 /***************
  * Sprint tools

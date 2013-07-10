@@ -14,3 +14,9 @@ subtask_tcp_timestamp/find_tcp_timestamp
 */output
 output
 tethered_clients
+subtask_boot_time/figures
+subtask_boot_time/figures_classification/
+subtask_clock_skew/figures/
+tethered_clients_figures/
+tethered_clients_processed_data/
+
