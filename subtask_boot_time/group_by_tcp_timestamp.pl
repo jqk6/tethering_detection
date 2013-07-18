@@ -38,10 +38,10 @@ use strict;
 my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
 my $DEBUG2 = 1; ## print for debug
-my $DEBUG3 = 1; ## force frequency to 250 for UT machines
 
-my $PLOT_EPS  = 0; ## 1 to output eps; 0 to output png figure
-my $PLOT_LOGX = 1; ## 1 to plot log x; 0 otherwise
+my $FIX_FREQ = 1; ## fix frequency
+my $PLOT_EPS  = 1; ## 1 to output eps; 0 to output png figure
+my $PLOT_LOGX = 0; ## 1 to plot log x; 0 otherwise
 
 
 #####
@@ -56,9 +56,7 @@ my $file_name;
 my %ip_info;        ## IP
                     ## {IP}{ip}{TX_TIME}{sending time}{RX_TIME}{receiving time}
                     ## {IP}{ip}{GROUP}{values}
-my @freq_candidates = (100, 250, 1000);
-my $freq_threshold = 0.4;
-my $threshold = 100;
+my $threshold = 40000;
 
 
 #####
@@ -136,16 +134,18 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
         if($freq == 0) {
             $freq = $v / $x;
 
-            foreach my $this_freq (@freq_candidates) {
-                if(abs($freq - $this_freq) < $this_freq * $freq_threshold) {
-                    $freq = $this_freq;
-                    last;
-                }
-            }
-
+            
             #####
             ## XXX: fix it!!
-            $freq = 250 if($this_ip =~ /128\.83/ and $DEBUG3);
+            if($FIX_FREQ) {
+                $freq = 250  if($this_ip =~ /128.83/);
+                $freq = 100  if($this_ip =~ /10.0.2.5/);
+                $freq = 128  if($this_ip =~ /10.0.2.8/);
+                $freq = 1000 if($this_ip =~ /10.0.2.7/);
+                $freq = 1000 if($this_ip =~ /10.0.2.4/);
+                $freq = 1000 if($this_ip =~ /10.0.2.6/);
+                $freq = 128  if($this_ip =~ /192.168.4.78/);
+            }
 
 
             print "frequency of $this_ip (".scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }).") = $freq\n" if($DEBUG2);
@@ -159,7 +159,6 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
         push( (@{ $ip_info{IP}{$this_ip}{GROUP} }), $new_value );
         
     }
-    
 
 
     $t1 = -1;

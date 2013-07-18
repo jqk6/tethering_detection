@@ -6,7 +6,7 @@ pcapParser3
 pcapParser4
 pcapParser5
 subtask_tcp_timestamp/find_tcp_timestamp
-
+*/*.class
 
 #####
 ## output directories
@@ -14,8 +14,8 @@ subtask_tcp_timestamp/find_tcp_timestamp
 */output
 output
 tethered_clients
-subtask_boot_time/figures
-subtask_boot_time/figures_classification/
+subtask_boot_time/figures*
+subtask_boot_time/output*
 subtask_clock_skew/figures/
 tethered_clients_figures/
 tethered_clients_processed_data/

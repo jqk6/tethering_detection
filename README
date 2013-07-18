@@ -74,6 +74,33 @@
 6. subtask_clock_skew
     Calculate the clock skew using TCP Timestamp.
 
+    a) calculate_clock_skew.pl
+       I followed the method in the paper "Remote physical device fingerprinting" page 5:
+
+        t_i: the receiving time of the packet i
+        T_i: the TCP Timestamp of the packet i
+        Hz: the clock frequency (so T_i / Hz ~ the tx time)
+
+        Let x_i = t_i - t_1, which is the interval between the pkt i and the pkt 1 observed by the receiver.
+        Let w_i = (T_i - T_1) / Hz, which is the interval between the pkt i and the pkt 1 from the sender.
+
+        And let y_i = w_i - x_i, which is the observed offset of the packet i. 
+        So, the slope of the offset-set (x_i, y_i) is the skew of the clock.
+
+
+    b) calculate_clock_skew_remove_rtt.pl
+       Based on the above codes, I try to remove one way delay estimated by RTT from TCP Timestamp -- but doesn't have any improvement.
+
+    c) calculate_clock_skew_sue.pl 
+       Based on "calculate_clock_skew.pl", use Moon Sue's alg to calculate clock skew.
+
+       ClockSkewMoon.pm
+       My implementation of Moon Sue's clock skew estimation algorithm proposed in "Estimation and Removal of Clock Skew from Network Delay Measureme
+
+    d) calculate_clock_skew_remove_delay_intermediate_sue.pl
+       Based on "calculate_clock_skew_sue.pl" and take two trace files as input, one from destination node and one from an intermediate node, and try to remove one way dalay by combining two traces.
+
+
 7. subtask_boot_time
     Calculate the boot time using TCP Timestamp option.
 
@@ -84,6 +111,21 @@
     b) group_by_tcp_timestamp.m
        Read the output of "group_by_tcp_timestamp.pl" and use K-Means to classify calculated Timestamps.
        Then it uses "partition index" to determine which number of partition yields best clustering.
+
+    c) group_by_tcp_timestamp.java
+       Read the output of "group_by_tcp_timestamp.pl" and use "X-Means" and "DBScan" to see how many clusters are there.
+       The clustering method is implemented by weka.
+
+    d) group_by_tcp_timestamp_elki.java
+       Read the output of "group_by_tcp_timestamp.pl" and use "DBScan" to see how many clusters are there.
+       The clustering method is implemented by ELKI.
+
+    e) group_by_tcp_timestamp_elki.sh
+       Read the output of "group_by_tcp_timestamp.pl" and use "DBScan" to see how many clusters are there.
+       This script uses the command mode (GUI mode) of ELKI.
+
+    f) group_by_tcp_timestamp_boottime.pl
+       Based on "group_by_tcp_timestamp.pl", but instead of calculate the initial TCP Timestamp, this one calculate the boot time.
 
 
 

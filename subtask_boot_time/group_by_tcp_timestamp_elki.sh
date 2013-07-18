@@ -1,0 +1,1 @@
+java -jar ~/bin/elki.jar -algorithm clustering.DBSCAN -dbc.in tmp.txt -dbscan.epsilon 100 -dbscan.minpts 100 -resulthandler ResultWriter -out.gzip -out output.4
