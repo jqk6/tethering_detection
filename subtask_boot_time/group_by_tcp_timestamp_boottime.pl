@@ -52,10 +52,10 @@ my $FIX_DEST_ADDR = "192.168.5.67";
 
 ## The IP to be plotted
 # my $PLOT_IP       = "10.0.2.4"; 
-# my $PLOT_IP       = "128.83";
-my $PLOT_IP       = "192.168";
+my $PLOT_IP       = "128.83";
+# my $PLOT_IP       = "192.168";
 
-my $THRESHOLD     = 4000;
+my $THRESHOLD     = 200;
 
 #####
 ## variables
@@ -108,14 +108,16 @@ while(<FH>) {
 }
 close FH;
 
-
 #####
 ## Calculate boot time
 print STDERR "start to process data..\n" if($DEBUG2);
 my $freq = 0;  ## the TCP timestamp clock frequency
 foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
-    next if(scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }) < $THRESHOLD);
+    if(scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }) < $THRESHOLD) {
+        delete $ip_info{IP}{$this_ip};
+        next;
+    }
 
 
     ## estimate the frequency
@@ -127,7 +129,8 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
         $freq = 1000 if($this_ip =~ /10.0.2.7/);
         $freq = 1000 if($this_ip =~ /10.0.2.4/);
         $freq = 1000 if($this_ip =~ /10.0.2.6/);
-        $freq = 1000  if($this_ip =~ /192.168.4.78/);
+        $freq = 982  if($this_ip =~ /192.168.4.78/);
+        $freq = 982  if($this_ip =~ /192.168.4.82/);
     }
     if($freq == 0) {
         $freq = 1000;
@@ -162,6 +165,8 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
     $ip_info{IP}{$this_ip}{AVG_BOOT_TIME} = MyUtil::average(\@{ $ip_info{IP}{$this_ip}{BOOT_TIME} });
     $ip_info{IP}{$this_ip}{STDEV_BOOT_TIME} = MyUtil::stdev(\@{ $ip_info{IP}{$this_ip}{BOOT_TIME} });
 
+
+    $freq = 0;
 }
 
 
@@ -192,6 +197,16 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
     print FH "  interval: ".($ip_info{IP}{$this_ip}{MAX_BOOT_TIME} - $ip_info{IP}{$this_ip}{MIN_BOOT_TIME})."\n";
     print FH "  avg: ".$ip_info{IP}{$this_ip}{AVG_BOOT_TIME}."\n";
     print FH "  stdev: ".$ip_info{IP}{$this_ip}{STDEV_BOOT_TIME}."\n\n";
+
+    if($DEBUG2) {
+        print "$this_ip: \n";
+        print "  min: ".$ip_info{IP}{$this_ip}{MIN_BOOT_TIME}."\n";
+        print "  max: ".$ip_info{IP}{$this_ip}{MAX_BOOT_TIME}."\n";
+        print "  interval: ".($ip_info{IP}{$this_ip}{MAX_BOOT_TIME} - $ip_info{IP}{$this_ip}{MIN_BOOT_TIME})."\n";
+        print "  avg: ".$ip_info{IP}{$this_ip}{AVG_BOOT_TIME}."\n";
+        print "  stdev: ".$ip_info{IP}{$this_ip}{STDEV_BOOT_TIME}."\n\n";    
+    }
+    
 }
 close FH;
 

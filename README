@@ -38,6 +38,8 @@
 4. tethered_clients
     IP of tethered clients detected by each heuristics
 
+5. output_boot_time_freq
+    used to store the frequency calculated by "detect_tethering_boot_time.pl"
 
 
 /***************
@@ -126,6 +128,23 @@
 
     f) group_by_tcp_timestamp_boottime.pl
        Based on "group_by_tcp_timestamp.pl", but instead of calculate the initial TCP Timestamp, this one calculate the boot time.
+
+    g) - MyBootTime.pm
+       - estimate_boot_time.pl
+       - estimate_freqs.pl
+       The code tries to implement recusive functions to better estimate the boot time and frequency -- but need some modification to make them work.
+       The basic idea is to iterate all possible frequencies and apply them to calculate the boot time from each packet. If these packets are from the same device, the difference between calculated boot time should be small.
+
+       Is called by "estimate_boot_time.pl" and "estimate_freqs.pl"
+
+    h) analyze_freq.pl
+       Analyze the frequence change over packets.
+        a) latest frequency
+        b) avg frequency
+        c) avg frequency in a time window
+        d) EWMA
+
+       batch run: analyze_freq.sh
 
 
 

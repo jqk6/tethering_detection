@@ -19,4 +19,4 @@ subtask_boot_time/output*
 subtask_clock_skew/figures/
 tethered_clients_figures/
 tethered_clients_processed_data/
-
+subtask*/*.output

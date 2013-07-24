@@ -37,6 +37,17 @@
 ##      h) TCP/UDP Connections       : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
 ##                                     Time bins  = (1, 5, 10, 60, 600)
 ##                                     Thresholds = (2 .. 30)
+##      i) Boot Time                 : boot_time.method_<methods>.<parameters>.DIFF_<time diff>.NUM_<num pkt>.<file id>.txt
+##                                     Frequency estimation methods: (1, 2, 3)
+##                                          1 = WINDOW based
+##                                          2 = EWMA based
+##                                          3 = last calculated freq
+##                                     Frequency estimation parameters: 
+##                                          1: (10, 100)
+##                                          2: (0.5, 0.9)
+##                                          3: (1)
+##                                     THRESHOLD_EST_RX_DIFF = (1 5 30 120)
+##                                     OUT_RANGE_NUM = (1 5 10)
 ##
 ## - output:
 ##      a) How many clients are detected by 1/2/3/4/5... methods
@@ -85,7 +96,8 @@ my @methods = ("TTL_one_second",
                "Pkt_len_entropy.timebin600.threshold1.2",
                "RTT_variance.threshold0.45",
                "UDP_Connections_timebin1.threshold28",
-               "TCP_UDP_Connections_timebin60.threshold14");
+               "TCP_UDP_Connections_timebin60.threshold14",
+               "boot_time.method_2.0.9.DIFF_120.NUM_5");
 
 my $file_id;
 
