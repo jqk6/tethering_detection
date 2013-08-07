@@ -137,16 +137,45 @@
 
        Is called by "estimate_boot_time.pl" and "estimate_freqs.pl"
 
-    h) analyze_freq.pl
-       Analyze the frequence change over packets.
+    h) - analyze_freq.pl
+        Analyze the frequence change over packets.
         a) latest frequency
         b) avg frequency
         c) avg frequency in a time window
         d) EWMA
+       - analyze_freq_per_flow.pl
+        Same as above but just do that per flow.
 
        batch run: analyze_freq.sh
 
 
+
+8. subtask_boot_time.stable
+    time_to_stable_boottime_per_flow.pl
+        Analyze the following things:
+        a) How long does the frequence per flow take to become stable.
+        b) How long are the flows (in seconds)
+        c) How many packets per flow
+        d) How much traffic per flow
+        e) How many flows per IP
+
+9. subtask_boot_time.deep_with_user_agent
+    - get_freq_of_ip_labeled_by_user_agent.pl
+        Combine TTL, boot time, and clock frequency heuristics to detect the tethering usage. The result is compared with that of User Agent heuristics.
+
+    - calculate_flow_statistics.pl
+        Analyze the following things:
+        a) the ratio of flows/IPs with User Agent
+        b) the ratio of flows/IPs with recognizable User Agent (i.e. User-Agent with keywords like "windows", "android", "mac os", ...)
+        c) the ratio of flows/IPs with Timestamp
+        d) the ratio of flows/IPs with Timestamp and is long enough to estimate accurate boot time
+
+    - calculate_boot_time_intervals.pl
+        Get the boot time intervals from flows with different User Agents of an IP.
+
+    - sanity_check_unstable_freq.sh
+        Use tshark to output RTT, TCP Timestamp, and packet receiving time to manually calculate the frequency.
+        This is used to check the frequency is indeed unstable and check if it's related to RTT.
 
 /***************
  * Sprint tools
@@ -297,6 +326,17 @@
         Group packets in flows, and analyze TTL, tput, pkt number, packet length entropy.
 
 
+    e) analyze_sprint_text_inter_arrival_time.pl
+        Analyze # of TCP/UDP connections (i.e. <src ip> <src port> <dst ip> <dst port>) of different time bins
+        @timebins = (1, 5, 10, 60, 600); ## the time bin size we want to analyze
+
+
+    f) analyze_sprint_http_user_agents.pl
+        Search HTTP User-Agent for the OS and device of the following keywords
+            OS: Windows, Microsoft, Android, MAC, Ubuntu
+            device: HTC, Samsung, LGE, NOKIA, Windows Phone, iPhone, iPad, MacBookAir 
+
+
 3. 
     a) detect_tethering.pl
 
@@ -432,6 +472,22 @@
         Read in results from "analyze_sprint_text.pl" and detect TTL tethering usage.
         e.g. TTL != 63, 127, or 254
 
+    j) detect_tethering_TTL_diff.pl
+        Read in results from "analyze_sprint_text.pl" and detect TTL tethering usage.
+        e.g. if there are multiple TTLs and their difference is 1 (or < some small number)
+
+    k) detect_tethering_udp_connections.pl
+
+    l) detect_tethering_tcp_udp_connections.pl
+
+    m) - detect_tethering_user_agent.pl
+       - detect_tethering_user_agent_no_win.pl
+        Read in results from "analyze_sprint_http_user_agents.pl" and detect tethering using the number of OSs and devices. The only difference of "detect_tethering_user_agent_no_win.pl" is that it doesn't count "Windows" machine behind the mobile station. This is just used for boot_time based method becuase Windows disable TCP Timestamp option in default.
+
+
+    n) detect_tethering_boot_time.pl
+        Detect tethering by calculating the boot time.
+
 
 4. cross_validate_detected_ip.pl
     Read IPs of tethered clients detected by different methods, and cross-validate the overlapping
@@ -466,6 +522,17 @@
         h) TCP/UDP Connections : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 5, 10, 60, 600)
             Thresholds = (2 .. 30)
+        i) Boot Time : boot_time.method_<methods>.<parameters>.DIFF_<time diff>.NUM_<num pkt>.<file id>.txt
+            Frequency estimation methods: (1, 2, 3)
+                 1 = WINDOW based
+                 2 = EWMA based
+                 3 = last calculated freq
+            Frequency estimation parameters: 
+                 1: (10, 100)
+                 2: (0.5, 0.9)
+                 3: (1)
+            THRESHOLD_EST_RX_DIFF = (1 5 30 120)
+            OUT_RANGE_NUM = (1 5 10)
 
     - output:
         a) How many clients are detected by 1/2/3/4/5... methods
@@ -510,6 +577,17 @@
         h) TCP/UDP Connections : TCP_UDP_Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
             Time bins  = (1, 5, 10, 60, 600)
             Thresholds = (2 .. 30)
+        i) Boot Time : boot_time.method_<methods>.<parameters>.DIFF_<time diff>.NUM_<num pkt>.<file id>.txt
+            Frequency estimation methods: (1, 2, 3)
+                 1 = WINDOW based
+                 2 = EWMA based
+                 3 = last calculated freq
+            Frequency estimation parameters: 
+                 1: (10, 100)
+                 2: (0.5, 0.9)
+                 3: (1)
+            THRESHOLD_EST_RX_DIFF = (1 5 30 120)
+            OUT_RANGE_NUM = (1 5 10)
 
     - output:
         a) ./tethered_clients_processed_data
@@ -611,6 +689,9 @@
         batch_detect_tethering_udp_connections.sh  .................. done
     batch_analyze_sprint_tcp_udp_connections.sh  .................... done
         batch_detect_tethering_tcp_udp_connections.sh  .............. done
+
+- batch_pcapParser5.sh
+    batch_detect_tethering_boot_time.sh
 
 -       batch_evaluate_methods_based_on_TTL.sh  ..................... done
         batch_cross_validation.sh  .................................. done

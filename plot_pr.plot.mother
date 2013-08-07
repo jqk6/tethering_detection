@@ -329,4 +329,4 @@ set style line 4 lc rgb "green" lt 1 lw 3
 set style line 5 lc rgb "yellow" lt 1 lw 3
 set style line 6 lc rgb "black" lt 1 lw 3
 
-plot input_dir."boot_time.base_".base_method.".PR.".file_id.".txt" using 7:6 with linespoints ls 1
+plot input_dir."boot_time.base_".base_method.".PR.".file_id.".txt" using 7:6 with points ls 1

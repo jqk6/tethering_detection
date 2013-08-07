@@ -17,6 +17,7 @@
 ##      c) TTL (default value)       : TTL_default_value.<file id>.txt
 ##      d) User Agent                : User_agent.<file id>.txt
 ##      e) TTL (diff)                : TTL_diff.<file id>.txt
+##      f) User Agent (w/o Windows)  : User_agent.no_windows.<file id>.txt
 ##
 ##      Evaluation Methods
 ##      a) Connections               : Connections_timebin<time bin size>.threshold<threshold>.<file id>.txt
@@ -77,14 +78,14 @@ my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
 my $DEBUG2 = 1; ## print for debug
 
-my $PLOT_a = 0;
-my $PLOT_b = 0;
-my $PLOT_c = 0;
-my $PLOT_d = 0;
-my $PLOT_e = 0;
-my $PLOT_f = 0;
-my $PLOT_g = 0;
-my $PLOT_h = 0;
+my $PLOT_a = 1;
+my $PLOT_b = 1;
+my $PLOT_c = 1;
+my $PLOT_d = 1;
+my $PLOT_e = 1;
+my $PLOT_f = 1;
+my $PLOT_g = 1;
+my $PLOT_h = 1;
 my $PLOT_i = 1;
 
 
@@ -98,7 +99,7 @@ my $FILTERED_SRC_IP = 1;    ## in the trace, some packets are from clients and s
 my $input_dir = "./tethered_clients";
 my $input_all_client_dir = "./output";
 my $output_dir = "./tethered_clients_processed_data";
-my @base_methods = ("TTL_one_second", "TTL_whole_trace", "TTL_default_value", "TTL_diff", "User_agent");
+my @base_methods = ("TTL_one_second", "TTL_whole_trace", "TTL_default_value", "TTL_diff", "User_agent", "User_agent.no_windows");
 
 
 my $file_id;
@@ -162,6 +163,7 @@ print "detected IPs of each method\n" if($DEBUG2);
 ## c) TTL (default value) : TTL_default_value.<file id>.txt
 ## d) User Agent : User_agent.<file id>.txt
 ## e) TTL (diff): TTL_diff.<file id>.txt
+## f) User Agent : User_agent.no_windows.<file id>.txt
 foreach my $method_name (@base_methods) {
     $file_name = "$method_name.$file_id.txt";
     open FH, "$input_dir/$file_name" or die $!;
@@ -740,7 +742,7 @@ if($PLOT_h) {
 
     my @conntions_time_bins = (1, 5, 10, 60, 600);
     my @connections_thresholds = (2 .. 30);
-    
+
     foreach my $based_method (@base_methods) {
         foreach my $this_timebin (@conntions_time_bins) {
             my $conn_output_file = "TCP_UDP_Connections_timebin$this_timebin.base_$based_method.PR.$file_id.txt";

@@ -24,13 +24,15 @@ for f in $files ; do
 
             ## THRESHOLD_EST_RX_DIFF
             for threshold_diff in 1 5 30 120 ; do
+            # for threshold_diff in 1 ; do
 
                 ## OUT_RANGE_NUM
                 for threshold_num in 1 5 10 ; do
+                # for threshold_num in 1 ; do
                     date
                     echo "  "$f", method="$method", parameter="$p", threshold_diff="$threshold_diff", threshold_num="$threshold_num
 
-                    perl /export/home/ychen/sprint/detect_tethering_boot_time.pl $f $method $param $threshold_diff $threshold_num
+                    perl /export/home/ychen/sprint/detect_tethering_boot_time.pl $f $method $p $threshold_diff $threshold_num
                 done
             done
         done

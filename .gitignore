@@ -11,7 +11,9 @@ subtask_tcp_timestamp/find_tcp_timestamp
 #####
 ## output directories
 */output_tcp
-*/output
+*/output*
+*/tmp*
+*/delete
 output
 tethered_clients
 subtask_boot_time/figures*
@@ -20,3 +22,9 @@ subtask_clock_skew/figures/
 tethered_clients_figures/
 tethered_clients_processed_data/
 subtask*/*.output
+output_boot_time_freq
+
+
+####
+## duplicate
+*/MyUtil.pm
