@@ -1,0 +1,52 @@
+/***************
+ * Tethering detection
+***************/
+
+
+/***************
+ * Features
+***************/
+
+
+
+/***************
+ * Directories
+***************/
+
+
+
+
+/***************
+ * Sub-Tasks
+***************/
+
+1. subtask_list_fields
+    extract the descriptions from Narus vectors
+
+
+
+
+/***************
+ * Narus tools
+***************/
+
+1. show_narus_vector_field.pl
+    A tool to show some example values of field in Narus vector
+
+/***************
+ * Sprint tools
+***************/
+
+
+
+
+
+/***************
+ * todo:
+***************/
+
+
+
+/***************
+ * jobs logs:
+***************/

@@ -1,33 +1,43 @@
 #####
 ## exec
-pcapParser
-pcapParser2
-pcapParser3
-pcapParser4
-pcapParser5
-pcapParser6
-subtask_tcp_timestamp/find_tcp_timestamp
-*/*.class
+*/pcapParser
+*/pcapParser2
+*/pcapParser3
+*/pcapParser4
+*/pcapParser5
+*/pcapParser6
+*/subtask_tcp_timestamp/find_tcp_timestamp
+*/*/*.class
 
 #####
-## output directories
-*/output*
-*/tmp*
-*/delete
-*/log
-*/figure*
-*/*.eps
-*/*.output
-*/*/figure*
-*.eps
-output
-tethered_clients
-tethered_clients_figures
-tethered_clients_processed_data/
-output_boot_time_freq
+## data
+data
+testbed/tcp_traces
 
+#####
+## output
+*/*.eps
+*/*output*
+*/tmp*
+*/tethered_clients
+*/tethered_clients_figures
+*/tethered_clients_processed_data
+testbed/exp2
+testbed/exp3
+
+*/*/output*
+*/*/tmp*
+*/*/delete
+*/*/log
+*/*/figure*
+
+*/*/*.eps
+*/*/*output*
+*/*/*/figure*
+
+*/*/*/*output*
 
 ####
 ## duplicate
-*/MyUtil.pm
-*/Tethering.pm
+*/*/MyUtil.pm
+*/*/Tethering.pm
