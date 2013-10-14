@@ -25,7 +25,7 @@
 ##
 ##########################################
 
-use lib "/export/home/ychen/utils";
+use lib "../../utils";
 
 use strict;
 use Tethering;
@@ -54,9 +54,9 @@ my $MIN_NUM_PKTS = 0;
 #############
 # Variables
 #############
-my $input_ip_map_dir    = "/data/ychen/mawi/ip_mapping";
-my $input_tether_ip_dir = "/data/ychen/output/mawi/tether_ips";
-my $output_dir = "/data/ychen/output/mawi/tether_ips_compare";
+my $input_ip_map_dir    = "../../processed_data/mawi/ip_mapping";
+my $input_tether_ip_dir = "../../processed_data/mawi/subtask_tethering_detection/tether_ips";
+my $output_dir          = "../../processed_data/mawi/subtask_tethering_detection/tether_ips_compare";
 
 my $ip_map_file;
 my $w_insert_file;

@@ -44,8 +44,8 @@ my $MIN_NUM_PKTS = 0;
 #############
 # Variables
 #############
-my $input_dir = "/data/ychen/mawi/text5";
-my $output_dir = "/data/ychen/output/mawi/tether_ips";
+my $input_dir = "../../processed_data/mawi/text5";
+my $output_dir = "../../processed_data/mawi/subtask_tethering_detection/tether_ips";
 
 my $file_name;
 my %ip_info = ();

@@ -18,7 +18,7 @@ testbed/tcp_traces
 ## output
 figures
 */*.eps
-*/*output*
+*/output
 */tmp*
 */tethered_clients
 */tethered_clients_figures
@@ -26,17 +26,17 @@ figures
 testbed/exp2
 testbed/exp3
 
-*/*/output*
+*/*/output
 */*/tmp*
 */*/delete
 */*/log
 */*/figure*
 
 */*/*.eps
-*/*/*output*
+*/*/output
 */*/*/figure*
 
-*/*/*/*output*
+*/*/*/output
 
 ####
 ## duplicate

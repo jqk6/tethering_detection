@@ -38,7 +38,7 @@ my $MIN_NUM_PKTS = 100;
 #############
 # Variables
 #############
-my $input_dir = "/data/ychen/mawi";
+my $input_dir = "../../processed_data/mawi";
 my $text_dir = "test5";
 my $exp = 0;
 my $replaced_ratio = 0.02;
