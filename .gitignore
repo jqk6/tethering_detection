@@ -16,6 +16,7 @@ testbed/tcp_traces
 
 #####
 ## output
+processed_data
 figures
 */*.eps
 */output
