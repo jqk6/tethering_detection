@@ -44,11 +44,27 @@ my $FIX_MAC_FREQ     = 1; ## fix the clock frequency of MacBook to 1000Hz
 my $FIX_OTHER_FREQ   = 1; ## fix the clock frequency of oher machines ...
 
 my $FIX_DEST         = 1; ## 1 to fix the TCP destination (necessary if there are more than 1 TCP connection)
-my $FIX_DEST_ADDR    = "192.168.5.67";
+# my $FIX_DEST_ADDR    = "192.168.5.67";
+# my $FIX_DEST_ADDR    = "199.116.177.167";
+# my $FIX_DEST_ADDR    = "10.0.2.1";
+# my $FIX_DEST_ADDR    = "69.171.237.20";
+# my $FIX_DEST_ADDR    = "64.185.182.185";
+# my $FIX_DEST_ADDR    = "128.83.40.144";
+# my $FIX_DEST_ADDR    = "128.83.120.139";
+my $FIX_DEST_ADDR    = "128.83.143.16";
+# my $FIX_DEST_ADDR    = "192.168.4.21";
+my $FIX_SRC          = 1;
+# my $FIX_SRC_ADDR     = "128.83";
+my $FIX_SRC_ADDR = "128.83.120.139|140.112.30.32|171.67.215.200|23.200.70.151|128.122.119.202|128.97.27.37|128.125.253.146|169.229.216.200|70.97.96.63|128.138.129.98|198.101.129.15|128.95.155.198|141.211.13.226|128.174.180.122|134.84.119.107|129.171.32.100|202.120.2.102|59.106.161.29|222.122.39.176|162.105.131.113|129.206.13.27|131.111.150.25|163.1.60.42|129.78.5.11";
 
 my $PLOT_EPS         = 0; ## 1 to output eps; 0 to output png figure
 # my $PLOT_IP          = "192.168.4.78";
-my $PLOT_IP          = "10.0.2.4";
+# my $PLOT_IP          = "10.0.2.4";
+# my $PLOT_IP          = "10.0.2.5";
+# my $PLOT_IP          = "10.0.2.8";
+# my $PLOT_IP          = "128.83";
+my $PLOT_IP          = "\\d+";
+
 
 #####
 ## variables
@@ -65,7 +81,7 @@ my %ip_info;        ## IP
                     ## {IP}{ip}{ALPHA}{alpha}
                     ## {IP}{ip}{BETA}{beta}
 
-my @freq_candidates = (100, 250, 1000);  ## choose the clock frequency as the closest one
+my @freq_candidates = (10, 100, 250, 1000);  ## choose the clock frequency as the closest one
 # my @freq_candidates = ();
 my $freq_threshold = 0.4;           ## the threshold if close to one of the above frequency
 my $threshold = 50;                ## only calculate IPs with enough TCP packets
@@ -104,6 +120,7 @@ while(<FH>) {
 
 
     next if($FIX_DEST and (!($dst =~ /$FIX_DEST_ADDR/)));
+    next if($FIX_SRC  and (!($src =~ /$FIX_SRC_ADDR/)));
     print join(",", ($time, $time_usec, $src, $dst, $proto, $ttl, $id, $len, $s_port, $d_port, $seq, $ack, $is_fin, $is_syn, $is_rst, $is_push, $is_ack, $is_urp, $is_ece, $is_cwr, $win, $urp, $payload_len, $tcp_ts_val, $tcp_ts_ecr))."\n" if($DEBUG1);
 
 
@@ -114,6 +131,10 @@ while(<FH>) {
 }
 close FH;
 
+if($DEBUG2) {
+    print ">> IPs (".scalar(keys %{ $ip_info{IP} }).")".join(", ", (keys %{ $ip_info{IP} }))."\n";
+}
+
 
 #####
 ## process clock skew
@@ -122,9 +143,14 @@ my $t1 = -1;    ## the first rx timestamp -- the time in seconds at which the me
 my $t1_us = -1;
 my $T1 = -1;    ## the first tx timestamp -- the tcp timestamp contained within the i-th packet
 my $freq = 0;  ## the TCP timestamp clock frequency
+my $cnt = 0;
 foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
+    print "\nsize: ".scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} })."\n";
     next if(scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }) < $threshold);
+
+    $cnt ++;
+    print "device $cnt:\n";
 
     my (@ts, @d);
     open FH, ">$output_dir/$pure_name.$this_ip.offset.txt" or die $!;
@@ -140,7 +166,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
                 $t1_us = $this_rx_time_us;
                 $T1 = $this_tx_time;
 
-                printf("%s first: rx time = %d.%06d, tx clock = %d\n", $this_ip, $t1, $t1_us, $T1) if($DEBUG1);
+                printf("%s first: rx time = %d.%06d, tx clock = %d\n", $this_ip, $t1, $t1_us, $T1) if($DEBUG2);
                 next;
             }
 
@@ -149,10 +175,13 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
             my $x = $x_s + $x_us / 1000000;
             my $v = $this_tx_time - $T1;
 
+            next if($x < 20);
 
             ## estimate the frequency
             if($freq == 0) {
                 $freq = $v / $x;
+                my $real_freq = $freq;
+                next if($freq == 0);
 
                 foreach my $this_freq (@freq_candidates) {
                     if(abs($freq - $this_freq) < $this_freq * $freq_threshold) {
@@ -164,7 +193,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
                 #####
                 ## XXX: fix it!!
-                $freq = 250  if($this_ip =~ /128.83/ and $FIX_UT_FREQ);
+                # $freq = 250  if($this_ip =~ /128.83/ and $FIX_UT_FREQ);
                 $freq = 100  if($this_ip =~ /10.0.2.5/ and $FIX_HTC_FREQ);
                 $freq = 128  if($this_ip =~ /10.0.2.8/ and $FIX_SAMSUNG_FREQ);
                 $freq = 1000 if($this_ip =~ /10.0.2.7/ and $FIX_IPHONE_FREQ);
@@ -173,7 +202,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
                 $freq = 128  if($this_ip =~ /192.168.4.78/ and $FIX_OTHER_FREQ);
 
 
-                print "frequency of $this_ip (".scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }).") = $freq\n" if($DEBUG2);
+                print "frequency of $this_ip (".scalar(keys %{ $ip_info{IP}{$this_ip}{TX_TIME} }).") = $freq ($real_freq)\n" if($DEBUG2);
             }
 
 
@@ -207,6 +236,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
 #####
 ## plot
+print STDERR "start to plot..\n" if($DEBUG2);
 open FH, ">$gnuplot_file" or dir $!;
 print FH "reset\n";
 if($PLOT_EPS) {
@@ -227,9 +257,10 @@ else {
 # print FH "set yrange [-10:1000]\n";
 print FH "set xlabel \"time (seconds)\"\n";
 print FH "set ylabel \"offset\"\n";
-print FH "set key Left under reverse nobox spacing 1\n";
-print FH "set style line 1 lc rgb \"#FF0000\" lt 1 lw 3\n";
-print FH "set style line 2 lc rgb \"#0000FF\" lt 1 lw 3\n";
+# print FH "set key Left under reverse nobox spacing 1\n";
+print FH "set nokey\n";
+print FH "set style line 1 lc rgb \"#0000FF\" lt 1 lw 3\n";
+print FH "set style line 2 lc rgb \"#FF0000\" lt 1 lw 5\n";
 print FH "set style line 3 lc rgb \"orange\" lt 1 lw 3\n";
 print FH "set style line 4 lc rgb \"green\" lt 1 lw 3\n";
 print FH "set style line 5 lc rgb \"yellow\" lt 1 lw 3\n";

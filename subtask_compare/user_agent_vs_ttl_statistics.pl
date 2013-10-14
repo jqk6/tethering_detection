@@ -2,9 +2,9 @@
 
 ##################################################
 ## Author: Yi-Chao Chen
-## 2013/08/06 @ Narus
+## 2013/08/19 @ Narus
 ##
-## Compare the result of User Agent and TTL heuristic
+## Modified from user_agent_vs_ttl.pl. Used to get the statistics about the cause of FP, FN
 ##
 ## - input: parsed_pcap_text
 ##     format
@@ -21,8 +21,8 @@
 ##     f) THRESHOLD : only IP with # of pkts > THRESHOLD will be analyzed
 ##
 ##  e.g.
-##      perl user_agent_vs_ttl.pl 49
-##      perl user_agent_vs_ttl.pl 2013.07.12.Samsung_iphone.fc2video_iperf.pcap.txt
+##      perl user_agent_vs_ttl_statistics.pl 49
+##      perl user_agent_vs_ttl_statistics.pl 2013.07.12.Samsung_iphone.fc2video_iperf.pcap.txt
 ##################################################
 
 use strict;
@@ -74,8 +74,8 @@ my @MAJOR_TTLS = (63, 127);
 ## variables
 my $input_dir_timestamp  = "/data/ychen/sprint/text5";
 my $input_dir_user_agent = "/data/ychen/sprint/text3";
-my $output_dir = "./output";
-my $figure_dir = "./figures";
+my $output_dir = "./output_statistics";
+my $figure_dir = "./figure_statistics";
 my $gnuplot_file = "plot_freq.plot";
 
 my $file_name;
@@ -168,8 +168,16 @@ while(<FH>) {
 
         ## User-Agent
         if($tag =~ /User.*Agent/i) {
-            $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{AGENT}{$val} = 1;
-            $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{TTL}{$ttl} = 1;
+
+            ## get OS
+            my @tmp_ua = ($val);
+            my @os = Tethering::_identify_os(\@tmp_ua, \@OS_keywords, \@OSs);
+
+            if(scalar(@os) == 1) { 
+                $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{AGENT}{$val} = 1;
+                $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{TTL}{$ttl} = 1;
+                $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{OS} = $os[0];
+            }
         }
     }
 
@@ -203,50 +211,14 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
             print "$this_ip -- $this_conn: \n" if($DEBUG3);
 
             ## OS of the flow
-            my $os = "";
-            if(exists $ip_info{IP}{$this_ip}{CONN}{$this_conn}{AGENT}) {
-                my @tmp_user_agents = (keys %{ $ip_info{IP}{$this_ip}{CONN}{$this_conn}{AGENT} });
-                # my @os = Tethering::identify_os(\@tmp_user_agents);
-                my @os = Tethering::_identify_os(\@tmp_user_agents, \@OS_keywords, \@OSs);
-                print STDERR "one flow should just have one OS\n" if($DEBUG0 and scalar(@os) > 1);
-
-                if(scalar(@os) == 1) {
-                    $os = $os[0];
-                    if(!exists $ip_info{IP}{$this_ip}{OS}{$os}) {
-                        $ip_info{IP}{$this_ip}{OS}{$os} = () if(!exists $ip_info{IP}{$this_ip}{OS}{$os});
-                    }
-                }
-                print "  - OS: $os\n" if($DEBUG3);
-            }
-            else {
-                die "there must be User Agent\n";
-            }
-
+            my $os = $ip_info{IP}{$this_ip}{CONN}{$this_conn}{OS};
+            
             ## TTL of the flow
-            if(exists $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TTL}) {
-                print "  - TTL: ".join(", ", (keys %{ $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TTL} }))."\n" if($DEBUG3);
-                
-                ## Flow
-                $ip_info{IP}{$this_ip}{CONN}{$this_conn}{OS} = $os if(!($os eq ""));
-
-                foreach my $this_ttl (keys %{ $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TTL} }) {
-                    
-                    if(!($os eq "")) {
-                        ## OS
-                        $ip_info{IP}{$this_ip}{OS}{$os}{TTL}{$this_ttl} = 1;
-                        ## TTL
-                        $ip_info{IP}{$this_ip}{TTL}{$this_ttl}{OS}{$os} = 1 ;    
-                    }
-                    else {
-                        ## TTL
-                        if(!exists $ip_info{IP}{$this_ip}{TTL}{$this_ttl}) {
-                            $ip_info{IP}{$this_ip}{TTL}{$this_ttl} = () if(!exists $ip_info{IP}{$this_ip}{TTL}{$this_ttl}); 
-                        }
-                    }
-                }
-            }
-            else {
-                die "there must be TTL\n";
+            foreach my $this_ttl (keys %{ $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TTL} }) {
+                ## OS
+                $ip_info{IP}{$this_ip}{OS}{$os}{TTL}{$this_ttl} = 1;
+                ## TTL
+                $ip_info{IP}{$this_ip}{TTL}{$this_ttl}{OS}{$os} = 1 ;    
             }
         }
     }
@@ -277,55 +249,77 @@ my $tn = 0;
 my $fp = 0;
 my $fn = 0;
 
+my $fp_path = 0;    ## e.g. (63, 64), (125, 127)
+my $fp_path_win = 0;    ## e.g. 63, 64 and is windows
+my $fp_win_63_127 = 0;    ## e.g. 63, 64
+my $fp_wierd_ttl = 0; ## e.g. not 63, 127
+my $fn_non_win = 0; ## 2 OS are both non-windows
+
 print "\n-- Evaluation -------------------------------\n" if($DEBUG4);
 foreach my $this_ip (keys %{ $ip_info{IP} }) {
-    my $num_os = 0;
-    $num_os = scalar(keys %{ $ip_info{IP}{$this_ip}{OS} }) if(exists $ip_info{IP}{$this_ip}{OS});
-    
-    my $num_ttl = 0;
-    my $ttl_not_major = 0;  ## 1 if one of TTL is not major TTL
-    if(exists $ip_info{IP}{$this_ip}{TTL}) {
-        # $num_ttl = scalar(keys %{ $ip_info{IP}{$this_ip}{TTL} });
-        foreach my $this_ttl (keys %{ $ip_info{IP}{$this_ip}{TTL} }) {
-            ## if have OS, count this one
-            if(exists $ip_info{IP}{$this_ip}{TTL}{$this_ttl}{OS}) {
-                $num_ttl ++;
-            }
+    my $num_os = scalar(keys %{ $ip_info{IP}{$this_ip}{OS} });
+    my $num_ttl = scalar(keys %{ $ip_info{IP}{$this_ip}{TTL} });
 
-            ## see if this TTL is one of the major TTL
-            if($ttl_not_major == 0) {
-                my $found = 0;
-                foreach my $this_major_ttl (@MAJOR_TTLS) {
-                    if($this_major_ttl == $this_ttl) {
-                        $found = 1;
-                        last;
-                    }
-                }
-                if($found == 0) {
-                    $ttl_not_major = 1;
-                }
-            }
-        }
-    }
-
-
-    
 
     ## True Positive
-    if($num_os >= 2 and ($num_ttl >= 2 or $ttl_not_major == 1) ) {
+    if($num_os >= 2 and $num_ttl >= 2) {
         $cnt_ip ++;
         $tp ++;
     }
     ## True Negative
-    elsif($num_os <= 1 and ($num_ttl <= 1 and $ttl_not_major == 0) ) {
+    elsif($num_os <= 1 and $num_ttl <= 1) {
         $cnt_ip ++;
         $tn ++;
     }
     ## False Positive
-    elsif($num_os <= 1 and ($num_ttl >= 2 or $ttl_not_major == 1) ) {
+    elsif($num_os <= 1 and $num_ttl >= 2) {
         $cnt_ip ++;
         $fp ++;
 
+        ## cause analysis
+        ## i) multiple path
+        my $max_ttl = -1;
+        my $min_ttl = 256;
+        foreach my $this_ttl (keys %{ $ip_info{IP}{$this_ip}{TTL} }) {
+            $max_ttl = $this_ttl if($max_ttl < $this_ttl);
+            $min_ttl = $this_ttl if($min_ttl > $this_ttl);
+        }
+        if(($max_ttl - $min_ttl) <= 2) {
+            $fp_path ++;
+
+            my @tmp_os = (keys %{ $ip_info{IP}{$this_ip}{OS} });
+            if($tmp_os[0] eq "Windows") {
+                $fp_path_win ++;
+            }
+        }
+        ## ii) wierd ttl
+        foreach my $this_ttl (keys %{ $ip_info{IP}{$this_ip}{TTL} }) {
+            my $found = 0;
+            foreach my $nor_ttl (@MAJOR_TTLS) {
+                if($this_ttl == $nor_ttl) {
+                    $found = 1;
+                    last;
+                }
+            }
+            if($found == 0) {
+                $fp_wierd_ttl ++;
+                last;
+            }
+        }
+        ## iii) windows could have 63 or 127
+        foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
+            if($this_os eq "Windows" and scalar(keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{TTL} }) > 1) {
+                my @ttls = sort {$a <=> $b} (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{TTL} });
+                my $ttl1 = $ttls[0];
+                my $ttl2 = $ttls[1];
+                
+                if($ttl1 == 63 and $ttl2 == 127) {
+                    $fp_win_63_127 ++;
+                    last;
+                }
+            }
+        }
+        
         if($DEBUG4) {
             print "False Positive\n";
             print "  - $this_ip\n";
@@ -346,9 +340,24 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
         }
     }
     ## False Negative
-    elsif($num_os >= 2 and ($num_ttl <= 1 or $ttl_not_major == 0) ) {
+    elsif($num_os >= 2 and $num_ttl <= 1) {
         $cnt_ip ++;
         $fn ++;
+
+
+        ## cause analysis
+        ## i) all OS are non-windows
+        my $has_win = 0;
+        foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
+            if($this_os eq "Windows") {
+                $has_win = 1;
+                last;
+            }
+        }
+        if($has_win == 0) {
+            $fn_non_win ++;
+        }
+        
 
         if($DEBUG4) {
             print "False Negative\n";
@@ -367,6 +376,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
                     print "      OSs: ".join(", ", (keys %{ $ip_info{IP}{$this_ip}{TTL}{$this_ttl}{OS} }))."\n";
                 }
             }
+            print "    - cause: have windows = $has_win\n"; ## 0 - no windows
         }
     }
 }
@@ -376,11 +386,11 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 ## Output
 ############################################################
 print STDERR "start to generate output..\n" if($DEBUG2);
-open FH_ALL, ">> $output_dir/user_agent_vs_ttl.$iteration.txt" or die $!;
-print FH_ALL "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn\n";
-close FH_ALL;
+open FH, ">> $output_dir/user_agent_vs_ttl.statistics.$iteration.txt" or die $!;
+print FH "$cnt_ip, $tp, $tn, $fp, $fn, $fp_path, $fp_path_win, $fp_win_63_127, $fp_wierd_ttl, $fn_non_win, ".($fn-$fn_non_win)."\n";
+close FH;
 
-print "\n valid_ip, invalid_ip, tp, tn, fp, fn\n";
-print "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn\n";
+print "\n valid_ip, invalid_ip, tp, tn, fp, fn, fp_path, fp_path_win, fp_win_63_127, fp_wierd_ttl, fn_non_win, fn_63_win\n";
+print "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn, $fp_path, $fp_path_win, $fp_win_63_127, $fp_wierd_ttl, $fn_non_win, ".($fn-$fn_non_win)."\n";
 
 

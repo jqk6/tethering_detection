@@ -102,6 +102,13 @@
     d) calculate_clock_skew_remove_delay_intermediate_sue.pl
        Based on "calculate_clock_skew_sue.pl" and take two trace files as input, one from destination node and one from an intermediate node, and try to remove one way dalay by combining two traces.
 
+    e) calculate_clock_skew_sue_segment.pl
+       modified from calculate_clock_skew_sue.pl. Take its output and calculate the clock skew of smaller segments.
+
+       - batch run:
+         i) batch_40_machines_avg_std_skew.sh
+         ii) batch_40_machines_seg_size.sh
+
 
 7. subtask_boot_time
     Calculate the boot time using TCP Timestamp option.
@@ -149,7 +156,6 @@
        batch run: analyze_freq.sh
 
 
-
 8. subtask_boot_time.stable
     time_to_stable_boottime_per_flow.pl
         Analyze the following things:
@@ -158,6 +164,7 @@
         c) How many packets per flow
         d) How much traffic per flow
         e) How many flows per IP
+
 
 9. subtask_boot_time.deep_with_user_agent
     - get_freq_of_ip_labeled_by_user_agent.pl
@@ -176,6 +183,24 @@
     - sanity_check_unstable_freq.sh
         Use tshark to output RTT, TCP Timestamp, and packet receiving time to manually calculate the frequency.
         This is used to check the frequency is indeed unstable and check if it's related to RTT.
+
+
+10. subtask_compare
+    This task is to compare the result of any heuristic with a more reliable one (e.g. User Agent) and evaluate the parameters/corretness of the heuristic.
+
+
+11. subtask_tcp_flavor
+    This task is to identify the TCP flavor by congestion window size
+
+12. subtask_tcp_timestamp
+    - timestamp_statistics.pl
+        The code is used to get the following TCP Timestamp statistics
+        a) # flows w/ and w/o TS
+        b) # IPs w/ and w/o TS
+        c) # flows w/ TS of various OS
+        d) # IPs w/ TS of various OS
+        e) # flows w/o TS of various OS
+        f) # IPs w/o TS of various OS
 
 /***************
  * Sprint tools
@@ -255,6 +280,19 @@
             - run pcapParser5.c in batch
             - input files: /data/ychen/sprint/pcap
             - output files: /data/ychen/sprint/text5
+
+    f) pcapParser6.c
+        reads in a pcap file and find Window Scale option
+        - input: pcap_file
+        - output: 
+            format
+            <time> <time usec> <src ip> <dest ip> <proto> <ttl> <id> <length> <src port> <dst port> <seq> <ack seq> <flag fin> <flag syn> <flag rst> <flag push> <flag ack> <flag urg> <flag ece> <flag cwr> <win> <urp> <payload len> <window scale>
+
+
+        - batch_pcapParser6.sh
+            - run pcapParser6.c in batch
+            - input files: /data/ychen/sprint/pcap
+            - output files: /data/ychen/sprint/text6
 
 
 2. 
@@ -692,6 +730,8 @@
 
 - batch_pcapParser5.sh
     batch_detect_tethering_boot_time.sh
+
+- batch_pcapParser6.sh
 
 -       batch_evaluate_methods_based_on_TTL.sh  ..................... done
         batch_cross_validation.sh  .................................. done

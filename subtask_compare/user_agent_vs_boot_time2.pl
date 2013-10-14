@@ -36,7 +36,7 @@ my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
 my $DEBUG2 = 0; ## print progress
 my $DEBUG3 = 0; ## print more
-my $DEBUG4 = 0; ## print false cases
+my $DEBUG4 = 1; ## print false cases
 
 
 my $FIX_FREQ       = 1; ## fix frequency
@@ -60,6 +60,7 @@ my $FIX_SRC_ADDR  = "^28\.";
 # my $PLOT_IP       = "192.168";
 my $PLOT_IP       = "28.222.245.159";
 
+my $FLOW_WITH_OS_ONLY = 1;  ## 1 to take into account flows with OS info
 
 my $BOOT_TIME_FREQ = 0;  ## 0: to use estimated freq, 1 to use 100Hz
 my $BOOT_TIME_INTERVAL_THRESHOLD = 3;  ## the boot time interval between two devices should be larger than this threshold
@@ -133,220 +134,72 @@ print "input file name = $file_name_ua\n" if($DEBUG2);
 ##   XX: only increase # of true and false negative 
 ####################################################
 if($iteration == 0) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_FREQ = 1;
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (2, 100, 128, 200, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
 elsif($iteration == 1) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_FREQ = 1;
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (100, 128, 200);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
 elsif($iteration == 2) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_FREQ = 1;
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (100, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
-####################################################
 elsif($iteration == 3) {
     $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (2, 100, 128, 200, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
 elsif($iteration == 4) {
     $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (100, 128, 200);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
 elsif($iteration == 5) {
     $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    $BOOT_TIME_INTERVAL_THRESHOLD = 600;
+    $BOOT_TIME_SPAN_THRESHOLD = 2;
+    $FLOW_PKT_NUM_THRESHOLD = 30;
+    $FLOW_DURATION_THRESHOLD = 5;
+    @CLOCK_FREQ = (100, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
-####################################################
-##--------------------------------------------------
 elsif($iteration == 6) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
+    $BOOT_TIME_FREQ = 1;
+    $BOOT_TIME_INTERVAL_THRESHOLD = 100;
+    $BOOT_TIME_SPAN_THRESHOLD = 10;
+    $FLOW_PKT_NUM_THRESHOLD = 5;
     $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 7) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 8) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##--------------------------------------------------
-elsif($iteration == 9) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 10) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 11) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##--------------------------------------------------
-##==================================================
-elsif($iteration == 12) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 13) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 14) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##==================================================
-elsif($iteration == 15) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 16) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 17) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##==================================================
-elsif($iteration == 18) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 19) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 20) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
+    @CLOCK_FREQ = (2, 100, 128, 200, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
 }
@@ -480,9 +333,13 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
                 if(scalar(@os) == 1) {
                     $os = $os[0];
-                    $ip_info{IP}{$this_ip}{OS}{$os} = ();
+                    $ip_info{IP}{$this_ip}{OS}{$os} = () if(!exists $ip_info{IP}{$this_ip}{OS}{$os});
                 }
                 print "  - OS: $os\n" if($DEBUG3);
+            }
+
+            if($FLOW_WITH_OS_ONLY) {
+                next if($os eq "");
             }
 
             ## Boot time of the flow
@@ -591,12 +448,54 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
     my $num_os = 0;
     $num_os = scalar(keys %{ $ip_info{IP}{$this_ip}{OS} }) if(exists $ip_info{IP}{$this_ip}{OS});
     my $num_boot_time = 0;
-    $num_boot_time = scalar(keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME});
+    # $num_boot_time = scalar(keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME});
+    if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}) {
+        foreach my $this_group_boot_time (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) {
+            foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN} }) {
+                if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{OS}) {
+                    $num_boot_time ++;
+                    last;
+                }
+            }
+        }
+    }
+
+
+    # if($DEBUG4) {
+    #     if(exists $ip_info{IP}{$this_ip}{CONN}) {
+    #         foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{CONN} }) {
+    #             print "$this_ip -- $this_conn: rx time=".$ip_info{IP}{$this_ip}{CONN}{$this_conn}{RX_TIME}[0]."\n";
+    #         }    
+    #     }
+    # }
 
     ## True Positive
     if($num_os >= 2 and $num_boot_time >= 2) {
         $cnt_ip ++;
         $tp ++;
+
+
+        if($DEBUG4) {
+            print "\n------------------------\n";
+            print "True Positive\n";
+            print "- $this_ip\n";
+        }
+        foreach my $this_group_boot_time (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) {
+            print "  - group boot time: $this_group_boot_time\n" if($DEBUG4);
+
+            ## check each flow of this group
+            foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN} }) {
+                print "    - flow: $this_conn\n" if($DEBUG4);
+                print "      - boot time: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{BOOT_TIME}."\n" if($DEBUG4);
+                print "      - freq: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{FREQ}."\n" if($DEBUG4);
+
+                if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{OS}) {
+                    print "      - OS: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{OS}."\n" if($DEBUG4);
+                    print "      - UserAgents: ".join(" |||| ", (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{AGENT} }) )."\n" if($DEBUG4);
+
+                }
+            }
+        }
     }
     ## True Negative
     # elsif($num_os <= 1 and $num_boot_time <= 1) {
@@ -671,6 +570,9 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
                 foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN} }) {
                     print "    - Flow: $this_conn\n" if($DEBUG4);
 
+                    print "      - UserAgents: ".join(" |||| ", (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{AGENT} }) )."\n" if($DEBUG4);
+
+
                     if(exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME}) {
                         print "      - BOOT_TIME: ".$ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME}."\n" if($DEBUG4);
 
@@ -708,7 +610,7 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 ## Output
 ############################################################
 print STDERR "start to generate output..\n" if($DEBUG2);
-open FH_ALL, ">> $output_dir/user_agent_vs_boot_time.$iteration.txt" or die $!;
+open FH_ALL, ">> $output_dir/user_agent_vs_boot_time2.$iteration.txt" or die $!;
 print FH_ALL "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn\n";
 close FH_ALL;
 

@@ -34,8 +34,8 @@ use Tethering;
 ## DEBUG
 my $DEBUG0 = 1; ## check error
 my $DEBUG1 = 0; ## print for debug
-my $DEBUG2 = 0; ## print progress
-my $DEBUG3 = 0; ## print more
+my $DEBUG2 = 1; ## print progress
+my $DEBUG3 = 1; ## print more
 my $DEBUG4 = 0; ## print false cases
 
 
@@ -60,6 +60,7 @@ my $FIX_SRC_ADDR  = "^28\.";
 # my $PLOT_IP       = "192.168";
 my $PLOT_IP       = "28.222.245.159";
 
+my $FLOW_WITH_OS_ONLY = 1;  ## 1 to take into account flows with OS info
 
 my $BOOT_TIME_FREQ = 0;  ## 0: to use estimated freq, 1 to use 100Hz
 my $BOOT_TIME_INTERVAL_THRESHOLD = 3;  ## the boot time interval between two devices should be larger than this threshold
@@ -79,7 +80,7 @@ my @devices         = ("HTC", "Samsung", "Samsung",  "LGE", "NOKIA", "Windows Ph
 ## variables
 my $input_dir_timestamp  = "/data/ychen/sprint/text5";
 my $input_dir_user_agent = "/data/ychen/sprint/text3";
-my $output_dir = "./output";
+my $output_dir = "./output_analysis";
 my $figure_dir = "./figures";
 my $gnuplot_file = "plot_freq.plot";
 
@@ -134,8 +135,8 @@ print "input file name = $file_name_ua\n" if($DEBUG2);
 ####################################################
 if($iteration == 0) {
     $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
+    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
+    $BOOT_TIME_SPAN_THRESHOLD = 3;
     $FLOW_PKT_NUM_THRESHOLD = 10;
     $FLOW_DURATION_THRESHOLD = 1;
     @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
@@ -144,208 +145,10 @@ if($iteration == 0) {
 }
 elsif($iteration == 1) {
     $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 2) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-####################################################
-elsif($iteration == 3) {
-    $BOOT_TIME_FREQ = 0;
     $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 4) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 5) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-####################################################
-##--------------------------------------------------
-elsif($iteration == 6) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
+    $BOOT_TIME_SPAN_THRESHOLD = 5;
     $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 7) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 8) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##--------------------------------------------------
-elsif($iteration == 9) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 10) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 11) {
-    $BOOT_TIME_FREQ = 0;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (100);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##--------------------------------------------------
-##==================================================
-elsif($iteration == 12) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 13) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 14) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 10;
-    $FLOW_DURATION_THRESHOLD = 1;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##==================================================
-elsif($iteration == 15) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 16) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 17) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 2;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-##==================================================
-elsif($iteration == 18) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 19) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 80;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
-    @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
-    @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
-    @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
-}
-elsif($iteration == 20) {
-    $BOOT_TIME_FREQ = 1;
-    $BOOT_TIME_INTERVAL_THRESHOLD = 3600;
-    $BOOT_TIME_SPAN_THRESHOLD = 1;
-    $FLOW_PKT_NUM_THRESHOLD = 0;
-    $FLOW_DURATION_THRESHOLD = 0;
+    $FLOW_DURATION_THRESHOLD = 5;
     @CLOCK_FREQ = (2, 10, 100, 128, 200, 1000);
     @OS_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPad", "iPhone", "MacBookAir", "LGE", "HTC", "Samsung");
     @OSs         = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple", "Apple", "Apple", "Android", "Android", "Android");
@@ -439,6 +242,8 @@ close FH;
 ############################################################
 ## Calculate boot time and identify OS
 ############################################################
+my %tethering_ip = ();
+my %untethering_ip = ();
 print STDERR "start to Calculate boot time and identify OS..\n" if($DEBUG2);
 foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
@@ -480,9 +285,13 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
                 if(scalar(@os) == 1) {
                     $os = $os[0];
-                    $ip_info{IP}{$this_ip}{OS}{$os} = ();
+                    $ip_info{IP}{$this_ip}{OS}{$os} = () if(!exists $ip_info{IP}{$this_ip}{OS}{$os});
                 }
                 print "  - OS: $os\n" if($DEBUG3);
+            }
+
+            if($FLOW_WITH_OS_ONLY) {
+                next if($os eq "");
             }
 
             ## Boot time of the flow
@@ -547,6 +356,60 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
                     }  ## end if not exist group_boo_time
                 }  ## end if boot time exist
             }
+        } ## end for each flow
+
+
+        # print STDERR "start to get tethering / untethering IPs\n";
+        # my %tmp = ();
+        my $num_os = 0;
+        foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
+            next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN});
+            my $found = 0;
+            foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN} }) {
+                next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME});
+                $found = 1;
+                # $tmp{GROUP}{$this_os}{CONN}{$this_conn}{BOOT_TIME} = $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME};
+            }
+            $num_os += $found;
+        }
+        print "==> os ($num_os):\n";
+
+        # my $num_os = scalar(keys %{ $tmp{GROUP} });
+        if($num_os > 1) {
+            # print "O: $this_ip: ".join(",", (keys %{ $tmp{GROUP} }))."\n";
+            # if(exists $tethering_ip{IP}{$this_ip}) {
+            #     my %tmp2 = (%{ $tethering_ip{IP}{$this_ip} }, %tmp);
+            #     %{ $tethering_ip{IP}{$this_ip} } = %tmp2;    
+            # }
+            # else {
+            #     %{ $tethering_ip{IP}{$this_ip} } = %tmp;
+            # }
+            foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
+                next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN});
+                foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN} }) {
+                    next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME});
+                    $tethering_ip{IP}{$this_ip}{GROUP}{$this_os}{CONN}{$this_conn}{BOOT_TIME} = $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME};
+                }
+            }
+            print "O: $this_ip: ".join(",", (keys %{ $tethering_ip{IP}{$this_ip}{GROUP} }))."\n";
+            
+        }
+        elsif($num_os == 1) {
+            # if(exists $untethering_ip{IP}{$this_ip}) {
+            #     my %tmp2 = (%{ $untethering_ip{IP}{$this_ip} }, %tmp);
+            #     %{ $untethering_ip{IP}{$this_ip} } = %tmp2;
+            # }
+            # else {
+            #     %{ $untethering_ip{IP}{$this_ip} } = %tmp;
+            # }
+            foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
+                next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN});
+                foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN} }) {
+                    next if(!exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME});
+                    $untethering_ip{IP}{$this_ip}{GROUP}{$this_os}{CONN}{$this_conn}{BOOT_TIME} = $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME};
+                }
+            }
+            print "X: $this_ip: ".join(",", (keys %{ $untethering_ip{IP}{$this_ip}{GROUP} }))."\n";
         }
     }
 }
@@ -580,139 +443,67 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 ##                  |- FREQ
 ##                  |- User_Agent
 ##
-print STDERR "start to Evaluate results..\n" if($DEBUG2);
-my $cnt_ip = 0;
-my $cnt_invalid_ip = 0;
-my $tp = 0;
-my $tn = 0;
-my $fp = 0;
-my $fn = 0;
-foreach my $this_ip (keys %{ $ip_info{IP} }) {
-    my $num_os = 0;
-    $num_os = scalar(keys %{ $ip_info{IP}{$this_ip}{OS} }) if(exists $ip_info{IP}{$this_ip}{OS});
-    my $num_boot_time = 0;
-    $num_boot_time = scalar(keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME});
-
-    ## True Positive
-    if($num_os >= 2 and $num_boot_time >= 2) {
-        $cnt_ip ++;
-        $tp ++;
-    }
-    ## True Negative
-    # elsif($num_os <= 1 and $num_boot_time <= 1) {
-    #     $cnt_ip ++;
-    #     $tn ++;
-    # }
-    elsif($num_os == 1 and $num_boot_time == 1) {
-        $cnt_ip ++;
-        $tn ++;
-    }
-    ## False Positive
-    elsif($num_os <= 1 and $num_boot_time >= 2) {
-        if($DEBUG4) {
-            print "\n------------------------\n";
-            print "False Positive\n";
-            print "- $this_ip\n";
+print "\n========================\n";
+print "tethering\n";
+my @tethering_boot_diff = ();
+foreach my $this_ip (keys %{ $tethering_ip{IP} }) {
+    print "- $this_ip\n";
+    my @groups = (keys %{ $tethering_ip{IP}{$this_ip}{GROUP} });
+    foreach my $this_gr_i (0 .. scalar(@groups)-2)  {
+        my $avg_boot_time1 = 0;
+        my $cnt1 = 0;
+        foreach my $this_conn1 (keys %{ $tethering_ip{IP}{$this_ip}{GROUP}{$groups[$this_gr_i]}{CONN} }) {
+            my $this_boot1 = $tethering_ip{IP}{$this_ip}{GROUP}{$groups[$this_gr_i]}{CONN}{$this_conn1}{BOOT_TIME};
+            print "  - ".$groups[$this_gr_i]." ($this_conn1) = $this_boot1\n";
+            $avg_boot_time1 += $this_boot1;
+            $cnt1 ++;
         }
+        $avg_boot_time1 = $avg_boot_time1 / $cnt1;
 
-        ## see if a group of boot_time miss OS
-        my $valid = 1;
-        foreach my $this_group_boot_time (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME} }) {
-            print "  - group boot time: $this_group_boot_time\n" if($DEBUG4);
-
-            ## check each flow of this group
-            my $os_found = 0;
-            foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN} }) {
-                print "    - flow: $this_conn\n" if($DEBUG4);
-                print "      - boot time: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{BOOT_TIME}."\n" if($DEBUG4);
-                print "      - freq: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{FREQ}."\n" if($DEBUG4);
-
-                if(exists $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{OS}) {
-                    print "      - OS: ".$ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{OS}."\n" if($DEBUG4);
-                    print "      - UserAgents: ".join(" |||| ", (keys %{ $ip_info{IP}{$this_ip}{GROUP_BOOT_TIME}{$this_group_boot_time}{CONN}{$this_conn}{AGENT} }) )."\n" if($DEBUG4);
-
-                    $os_found = 1;
-                    last;
-                }
+        foreach my $this_gr_j ($this_gr_i+1 .. scalar(@groups)-1)  {
+            my $avg_boot_time2 = 0;
+            my $cnt2 = 0;
+            foreach my $this_conn2 (keys %{ $tethering_ip{IP}{$this_ip}{GROUP}{$groups[$this_gr_j]}{CONN} }) {
+                my $this_boot2 = $tethering_ip{IP}{$this_ip}{GROUP}{$groups[$this_gr_j]}{CONN}{$this_conn2}{BOOT_TIME};
+                $avg_boot_time2 += $this_boot2;
+                $cnt2 ++;
             }
-            if($os_found == 0) {
-                ## this group miss OS --> invalid IP
-                $valid = 0;
-                last;
-            }
-        }
-
-        if($valid == 1) {
-            print "  VALID!!\n" if($DEBUG4);
-            $cnt_ip ++;
-            $fp ++;
-        }
-        else {
-            print "  INVALID!!\n" if($DEBUG4);
-            $cnt_invalid_ip ++;
+            $avg_boot_time2 = $avg_boot_time2 / $cnt2;
+            push(@tethering_boot_diff, abs($avg_boot_time1 - $avg_boot_time2));
         }
     }
-    ## False Negative
-    elsif($num_os >= 2 and $num_boot_time <= 1) {
-        if($DEBUG4) {
-            print "\n------------------------\n";
-            print "False Negative\n";
-            print "- $this_ip\n";
-        }
+}
+print "\n========================\n";
+print "untethering\n";
+my @untethering_boot_diff = ();
+foreach my $this_ip (keys %{ $untethering_ip{IP} }) {
+    die "size should == 1\n" if (scalar((keys %{ $untethering_ip{IP}{$this_ip}{GROUP} })) != 1);
+    print "- $this_ip (".scalar(keys %{ $untethering_ip{IP}{$this_ip}{GROUP} })."): ";
 
-        ## see if an OS miss boot time
-        my $valid = 1;
-        foreach my $this_os (keys %{ $ip_info{IP}{$this_ip}{OS} }) {
-            print "  - OS: $this_os\n" if($DEBUG4);
+    foreach my $this_gr (keys %{ $untethering_ip{IP}{$this_ip}{GROUP} }) {
+        print "$this_gr (".scalar(keys %{ $untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN} }).")\n";
 
-            ## check each flow of OS
-            my $boot_found = 0;
-            if(exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}) {
-                foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN} }) {
-                    print "    - Flow: $this_conn\n" if($DEBUG4);
+        my @flows = (keys %{ $untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN} });
+        foreach my $flow_i (0 .. scalar(@flows)-2) {
+            print "  - $this_gr (".$flows[$flow_i]."): ".$untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_i]}{BOOT_TIME}."\n";
+            foreach my $flow_j ($flow_i+1 .. scalar(@flows)-1) {
+                print "  -   $this_gr (".$flows[$flow_j]."): ".$untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_j]}{BOOT_TIME}." > ".abs($untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_i]}{BOOT_TIME} - $untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_j]}{BOOT_TIME})."\n";
 
-                    if(exists $ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME}) {
-                        print "      - BOOT_TIME: ".$ip_info{IP}{$this_ip}{OS}{$this_os}{CONN}{$this_conn}{BOOT_TIME}."\n" if($DEBUG4);
-
-                        $boot_found = 1;
-                        last;
-                    }
-                }
-            }
-            if($boot_found == 0) {
-                ## this OS miss boot time --> invalid IP
-                $valid = 0;
-                last;
+                push(@untethering_boot_diff, abs($untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_i]}{BOOT_TIME} - $untethering_ip{IP}{$this_ip}{GROUP}{$this_gr}{CONN}{$flows[$flow_j]}{BOOT_TIME}));
             }
         }
-
-        if($valid == 1) {
-            print "  VALID!!\n" if($DEBUG4);
-
-            $cnt_ip ++;
-            $fn ++;
-        }
-        else {
-            print "  INVALID!!\n" if($DEBUG4);
-
-            $cnt_invalid_ip ++;
-        }
-    }
-    else {
-        $cnt_invalid_ip ++;
     }
 }
 
 
-############################################################
-## Output
-############################################################
-print STDERR "start to generate output..\n" if($DEBUG2);
-open FH_ALL, ">> $output_dir/user_agent_vs_boot_time.$iteration.txt" or die $!;
-print FH_ALL "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn\n";
-close FH_ALL;
+open FH, ">>$output_dir/user_agent_vs_boot_time_analysis_tethering.$iteration.txt" or die $!;
+print FH join("\n", @tethering_boot_diff)."\n";
+close FH;
 
-print "\n valid_ip, invalid_ip, tp, tn, fp, fn\n";
-print "$cnt_ip, $cnt_invalid_ip, $tp, $tn, $fp, $fn\n";
+open FH, ">>$output_dir/user_agent_vs_boot_time_analysis_untethering.$iteration.txt" or die $!;
+print FH join("\n", @untethering_boot_diff)."\n";
+close FH;
 
 
+print "done\n";
+1;
