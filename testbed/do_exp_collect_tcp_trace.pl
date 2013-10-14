@@ -54,6 +54,26 @@ my $req_cnt 	 = $req_length / $req_interval;
 # 				"pinkwater.cs.utexas.edu", "mounds.cs.utexas.edu");
 # my @targets = ("zion.cs.utexas.edu", "valleyview.cs.utexas.edu", 
 # 				"pinkwater.cs.utexas.edu", "mounds.cs.utexas.edu");
+# my @targets = ("zion.cs.utexas.edu", "valleyview.cs.utexas.edu", 
+# 				"clockwork-grapefruit.cs.utexas.edu", "aero.cs.utexas.edu", 
+# 				"caramello.cs.utexas.edu", "payday.cs.utexas.edu",
+# 				"vermincelli.cs.utexas.edu", "adorable-seal-larva.cs.utexas.edu",
+# 				"smarties.cs.utexas.edu", "chunky.cs.utexas.edu",
+# 				"almond-joy.cs.utexas.edu", "mounds.cs.utexas.edu",
+# 				"apathetic-lizardman.cs.utexas.edu", "baby-purple-worm.cs.utexas.edu",
+# 				"barrow-wight.cs.utexas.edu", "bazookafish.cs.utexas.edu",
+# 				"bit-o-honey.cs.utexas.edu", "black-black.cs.utexas.edu",
+# 				"cadbury-cream-eggs.cs.utexas.edu", "candy-buttons.cs.utexas.edu",
+# 				"candy-corn.cs.utexas.edu", "caramello.cs.utexas.edu",
+# 				"charity.cs.utexas.edu", "chastity.cs.utexas.edu",
+# 				"chick-o-stick.cs.utexas.edu", "clark-bar.cs.utexas.edu",
+# 				"comma-chameleon.cs.utexas.edu", "crunch.cs.utexas.edu",
+# 				"dubble-bubble.cs.utexas.edu", "dum-dums.cs.utexas.edu",
+# 				"emo-squid.cs.utexas.edu", "fast-break.cs.utexas.edu",
+# 				"floating-eye.cs.utexas.edu", "glass-piercer.cs.utexas.edu",
+# 				"gummi-bears.cs.utexas.edu", "handsome-mariachi.cs.utexas.edu",
+# 				"hersheys-kisses.cs.utexas.edu", "jelly-belly.cs.utexas.edu",
+# 				"junior-mints.cs.utexas.edu", "ki-rin.cs.utexas.edu");
 my @targets = ("www.cs.utexas.edu", "linux1.csie.ntu.edu.tw", 
 			   "www.stanford.edu", "www.mit.edu",
 			   "www.nyu.edu", "www.ucla.edu",
@@ -108,7 +128,7 @@ foreach my $this_cnt (1 .. $req_cnt) {
 
 	foreach my $this_target (@targets) {
 		# my $cmd = "ping $this_target -c $req_cnt -i $req_interval > /dev/null &";
-		my $cmd = "curl $this_target/~yichao/index.html &> /dev/null &";
+		my $cmd = "curl $this_target &> /dev/null &";
 		print $cmd."\n" if($DEBUG1);
 		system("$cmd");
 	}
