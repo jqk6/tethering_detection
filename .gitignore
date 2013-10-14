@@ -5,26 +5,29 @@ pcapParser2
 pcapParser3
 pcapParser4
 pcapParser5
+pcapParser6
 subtask_tcp_timestamp/find_tcp_timestamp
 */*.class
 
 #####
 ## output directories
-*/output_tcp
 */output*
 */tmp*
 */delete
+*/log
+*/figure*
+*/*.eps
+*/*.output
+*/*/figure*
+*.eps
 output
 tethered_clients
-subtask_boot_time/figures*
-subtask_boot_time/output*
-subtask_clock_skew/figures/
-tethered_clients_figures/
+tethered_clients_figures
 tethered_clients_processed_data/
-subtask*/*.output
 output_boot_time_freq
 
 
 ####
 ## duplicate
 */MyUtil.pm
+*/Tethering.pm
