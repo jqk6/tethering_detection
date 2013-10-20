@@ -18,6 +18,9 @@ testbed/tcp_traces
 ## output
 processed_data
 figures
+*/figures_freq
+*/output_freq
+*/*output.txt
 */*.eps
 */output
 */tmp*
