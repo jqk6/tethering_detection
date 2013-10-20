@@ -49,7 +49,10 @@ my $FIX_SRC       = 1; ## 1 to fix the TCP src
 # my $FIX_SRC_ADDR  = "10.0.2.4";
 # my $FIX_SRC_ADDR  = "128.83";
 # my $FIX_SRC_ADDR  = "128.83.144.185";
-my $FIX_SRC_ADDR  = "28.222.97.95";
+# my $FIX_SRC_ADDR  = "28.222.97.95";
+# my $FIX_SRC_ADDR = "192.168.1.3|192.168.1.7";
+my $FIX_SRC_ADDR = "192.168.1.7";
+
 
 ## The IP to be plotted
 # my $PLOT_IP       = "10.0.2.4"; 
@@ -111,7 +114,7 @@ while(<FH>) {
     print join(",", ($time, $time_usec, $src, $dst, $proto, $ttl, $id, $len, $s_port, $d_port, $seq, $ack, $is_fin, $is_syn, $is_rst, $is_push, $is_ack, $is_urp, $is_ece, $is_cwr, $win, $urp, $payload_len, $tcp_ts_val, $tcp_ts_ecr))."\n" if($DEBUG1);
 
 
-    ## check if it's a reordering / retransmission
+    ## check if it's a disordering / retransmission
     next if(exists $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{SEQ} and $seq < $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{SEQ}[-1]);
     ## check if it's a duplicate
     next if( (exists $ip_info{IP}{$src}{CONN}{"$s_port.$dst.$d_port"}{TX_TIME}) and 
@@ -129,7 +132,7 @@ close FH;
 # die "there should be just one IP\n" if(scalar(keys %{ $ip_info{IP} }) > 1);
 
 #####
-## Calculate boot time
+## Calculate frequency
 print STDERR "start to process data..\n" if($DEBUG2);
 foreach my $this_ip (keys %{ $ip_info{IP} }) {
     foreach my $this_conn (keys %{ $ip_info{IP}{$this_ip}{CONN} } ) {
@@ -143,21 +146,27 @@ foreach my $this_ip (keys %{ $ip_info{IP} }) {
 
         my $first_tx_time = -1;
         my $first_rx_time = -1;
+        my $first_seq     = -1;
+        my $cnt = 0;
         foreach my $ind (0 .. scalar(@{ $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TX_TIME} })-1) {
-
+            $cnt ++;
+            
             my $this_tx_time = $ip_info{IP}{$this_ip}{CONN}{$this_conn}{TX_TIME}[$ind];
             my $this_rx_time = $ip_info{IP}{$this_ip}{CONN}{$this_conn}{RX_TIME}[$ind];
+            my $this_seq     = $ip_info{IP}{$this_ip}{CONN}{$this_conn}{SEQ}[$ind];
 
-            if($first_tx_time < 0) {
+            if($first_tx_time < 0 or $cnt % 10000 == 0) {
                 $first_tx_time = $this_tx_time;
                 $first_rx_time = $this_rx_time;
+                $first_seq     = $this_seq;
                 
                 next;
             }
 
+
             ## latest frequency
             if($DEBUG0 and ($this_rx_time == $first_rx_time or $this_tx_time == $first_tx_time)) {
-                die "first ($first_rx_time, $first_tx_time), latest ($this_rx_time, $this_tx_time)\n" if($DEBUG2);
+                print "err: first ($first_rx_time, $first_tx_time, $first_seq), latest ($this_rx_time, $this_tx_time, $this_seq)\n" if($DEBUG2);
                 next;
             }
             my $this_freq = ($this_tx_time - $first_tx_time) / ($this_rx_time - $first_rx_time);

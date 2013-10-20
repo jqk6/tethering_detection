@@ -60,12 +60,24 @@ dir="./output"
 
 ############################################
 
-files=`ls $dir/2013.09.24.universities.10hr.3.pcap.txt.*.offset.txt`
+# files=`ls $dir/2013.09.24.universities.10hr.3.pcap.txt.*.offset.txt`
 
-truncate ./output/2013.09.24.universities.10hr.3.seg.txt --size 0 
+# truncate ./output/2013.09.24.universities.10hr.3.seg.txt --size 0 
+
+# for f in $files ; do
+#     date
+#     echo "  "$f
+#     perl /export/home/ychen/sprint/subtask_clock_skew/calculate_clock_skew_sue_segment.pl $f 600 >> ./output/2013.09.24.universities.10hr.3.seg.txt
+# done
+
+############################################
+
+files=`ls $dir/2013.10.14.iphone.tr1.iperf.pcap.txt.*.offset.txt`
+
+truncate ./output/2013.10.14.iphone.tr1.iperf.seg.txt --size 0 
 
 for f in $files ; do
     date
     echo "  "$f
-    perl /export/home/ychen/sprint/subtask_clock_skew/calculate_clock_skew_sue_segment.pl $f 600 >> ./output/2013.09.24.universities.10hr.3.seg.txt
+    perl ./calculate_clock_skew_sue_segment.pl $f 60 >> ./output/2013.10.14.iphone.tr1.iperf.seg.txt
 done

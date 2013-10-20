@@ -21,17 +21,20 @@ figures
 */*.eps
 */output
 */tmp*
+*/output_boot_time_freq
 */tethered_clients
 */tethered_clients_figures
 */tethered_clients_processed_data
 testbed/exp2
 testbed/exp3
 
-*/*/output
+*/*/output*
 */*/tmp*
 */*/delete
 */*/log
 */*/figure*
+*/*/estimate_freqs.output
+
 
 */*/*.eps
 */*/output

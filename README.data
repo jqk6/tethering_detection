@@ -1,0 +1,128 @@
+traces:
+
+1. 2013.07.08.ut.4machines.pcap
+Use a MacBook (connected to Narus etherenet) to send ssh commands to 4 linux machines.
+The trace is around 120 seconds.
+The sending rate is 5 commands per second to each machine.
+Mahcines are: "zion.cs.utexas.edu", "valleyview.cs.utexas.edu", "pinkwater.cs.utexas.edu", "mounds.cs.utexas.edu"
+
+
+2. 2013.07.08.ut.12machines.pcap
+Use a MacBook (connected to Narus etherenet) to send ssh commands to 12 linux machines.
+The trace is around 600 seconds.
+The sending rate is 5 commands per second to each machine.
+Mahcines are: "zion.cs.utexas.edu", "valleyview.cs.utexas.edu", "clockwork-grapefruit.cs.utexas.edu", "aero.cs.utexas.edu", "caramello.cs.utexas.edu", "payday.cs.utexas.edu", "vermincelli.cs.utexas.edu", "totenberg.cs.utexas.edu", "smarties.cs.utexas.edu", "singh.cs.utexas.edu", "pinkwater.cs.utexas.edu", "mounds.cs.utexas.edu".
+
+
+3. 2013.07.10.mobile_devices.1s.short.pcap
+(not good: some device send only a few TCP packets.)
+Associate 5 mobile devices with one AP and collect the trace on the AP.
+Each mobile device open a browser and connect to a web page which refleshes itself every 1 second.
+The trace is around 240 seconds.
+The devices include 2 iPhone, an iPad, an Android phone, an Android tablet.
+
+
+4. 2013.07.10.mobile_devices.fc2.short.pcap
+(not good: some device send only a few TCP packets.)
+Associate 5 mobile devices with one AP and collect the trace on the AP.
+Each mobile device open a browser play vidoe online.
+The trace is around 120 seconds.
+The devices include 2 iPhone, an iPad, an Android phone, an Android tablet.
+
+
+5. 2013.07.11.HTC.iperf.2min.pcap
+Associate an Android phone to an AP and collect the trace on the AP.
+The phone runs iPerf server and the AP runs iPerf client (send 1500bytes TCP packets to the phone.)
+The trace is around 140 seconds.
+
+
+6. 2013.07.11.HTC.video.2min.pcap
+Associate an Android phone to an AP and collect the trace on the AP.
+The phone open a browser and play the video.
+The trace is around 140 seconds.
+
+
+7. 2013.07.11.HTC.web.2min.pcap
+Associate an Android phone to an AP and collect the trace on the AP.
+The phone open a browser and randomly open some web sites.
+The trace is around 140 seconds.
+
+
+8. 2013.07.11.Samsung.iperf.2min.pcap
+Associate an Android tablet to an AP and collect the trace on the AP.
+The tablet runs iPerf server and the AP runs iPerf client (send 1500bytes TCP packets to the phone.)
+The trace is around 140 seconds.
+
+
+9. 2013.07.12.Samsung_iphone.web_video.pcap
+Associate an Android table and an iPhone to an AP and collect the trace on the AP.
+The Android tablet open a browser and randomly open some web sites;
+The iPhone open a browser and play a video (FC2, which use TCP);
+The trace is around 140 seconds.
+
+
+10. 2013.07.12.Samsung_iphone.web_youtube.pcap
+Associate an Android tablet and an iPhone to an AP and collect the trace on the AP.
+The Android tablet open a browser and randomly open some web sites;
+The iPhone open a Youtube APP and play a video (which uses TCP but does not have TCP Timestamp option);
+The trace is around 140 seconds.
+
+
+11. 2013.07.12.iPhone.facebook.pcap
+
+12. 2013.07.12.iPhone.fc2video.pcap
+
+13. 2013.07.15.Samsung.facebook.pcap
+Regularly browse Facebook on Chrome.
+
+14. 2013.07.15.Samsung.iperf.dest_node.pcap
+    2013.07.15.Samsung.iperf.intermediate_node.pcap
+
+    Associate an Android tablet to an AP.
+    The Android tablet run iPerf client and send packets to another Windows laptop running iPerf server.
+    "2013.07.15.Samsung.iperf.dest_node.pcap" is collected on the Windows laptop (iPerf server);
+    "2013.07.15.Samsung.iperf.intermediate_node.pcap" is collected on the AP's wired network interface.
+
+
+15. 2013.07.15.Samsung.iperf.2nd_trace.dest_node.pcap
+    2013.07.15.Samsung.iperf.2nd_trace.intermediate_node_wireless.pcap
+    2013.07.15.Samsung.iperf.2nd_trace.intermediate_node_wired.pcap
+
+    Same setup as exp 14 - associate an Android tablet to an AP.
+    The only difference is that we also collect traffic on wireless interface on AP connecting to Samsung tablet.
+    The Android tablet run iPerf client and send packets to another Windows laptop running iPerf server.
+    "2013.07.15.Samsung.iperf.2nd_trace.dest_node.pcap" is collected on the Windows laptop (iPerf server);
+    "2013.07.15.Samsung.iperf.2nd_trace.intermediate_node_wired.pcap" is collected on the AP's wired network interface;
+    "2013.07.15.Samsung.iperf.2nd_trace.intermediate_node_wireless.pcap" is collected on the AP's wireless network interface.
+
+16. 2013.08.15.macbook.iperf_client.pcap
+
+    run iperf client on my macbook to see if clock frequency is stable.
+
+17. 2013.08.15.samsung_tablet.iperf_client.pcap
+    2013.08.15.samsung_tablet.iperf_client2.pcap
+    2013.08.15.samsung_tablet.iperf_client3.pcap
+
+    run iperf client on Samsung Tablet to see if clock frequency is stable.
+
+18. 2013.08.19.40utmachines_short.pcap
+    2013.08.19.40utmachines.pcap
+    2013.08.20.40utmachines.pcap
+
+    Running "curl" on my macbook to get http packets from 39 UT machines every 0.5 seconds.
+    See testbed/do_exp_collect_tcp_trace.pl to see which UT machines.
+
+
+19. 2013.09.23.universities.short.pcap
+    2013.09.23.universities.10hr.pcap
+
+    Running "curl" on my olympic.csres.utexas.edu to get http packets from 24 universities all over the world every 2 seconds. See testbed/do_exp_collect_tcp_trace.pl to see which universities. Note that I tried to collect 10hr data but tshark stops after the file is 2GB, so it actually much shorter.
+    
+
+20. 2013.09.24.universities.10hr.pcap
+    2013.09.24.universities.10hr.2.pcap
+    2013.09.24.universities.10hr.3*.pcap
+
+    Same setting as "2013.09.23.universities.pcap" but get http packets every 0.5 seconds.
+    Again, tshark stops after the file is 2GB, so the first 2 traces are much shorter than 10hr. In "2013.09.24.universities.10hr.3*.pcap", I had tshark partition pcap traces every 10 minutes so they can be combined as one 10hr trace.
+
