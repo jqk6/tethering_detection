@@ -43,3 +43,7 @@ testbed/exp3
 ## duplicate
 */*/MyUtil.pm
 */*/Tethering.pm
+
+#####
+## others
+.DS_Store
