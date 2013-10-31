@@ -202,6 +202,12 @@
         e) # flows w/o TS of various OS
         f) # IPs w/o TS of various OS
 
+13. subtask_iphone_freq
+    The task is to figure why the clock frequency changes over time and, if possible, find the pattern.
+    - analyze_freq_per_flow[| 2 | 3 | 4].pl
+        Each code uses a different way to calculate the frequency of flows and evaluate them using the standard deviation of estimated boot time.
+
+
 /***************
  * Sprint tools
 ***************/

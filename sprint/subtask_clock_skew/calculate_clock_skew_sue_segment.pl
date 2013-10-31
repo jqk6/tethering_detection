@@ -42,7 +42,7 @@ my $FIX_IAD_FREQ     = 1; ## fix the clock frequency of iPhone to 1000Hz
 my $FIX_MAC_FREQ     = 1; ## fix the clock frequency of MacBook to 1000Hz
 my $FIX_OTHER_FREQ   = 1; ## fix the clock frequency of oher machines ...
 
-my $FIX_DEST         = 1; ## 1 to fix the TCP destination (necessary if there are more than 1 TCP connection)
+# my $FIX_DEST         = 1; ## 1 to fix the TCP destination (necessary if there are more than 1 TCP connection)
 # my $FIX_DEST_ADDR    = "192.168.5.67";
 # my $FIX_DEST_ADDR    = "199.116.177.167";
 # my $FIX_DEST_ADDR    = "10.0.2.1";
@@ -50,7 +50,8 @@ my $FIX_DEST         = 1; ## 1 to fix the TCP destination (necessary if there ar
 # my $FIX_DEST_ADDR    = "64.185.182.185";
 # my $FIX_DEST_ADDR    = "128.83.40.144";
 # my $FIX_DEST_ADDR    = "128.83.120.139";
-my $FIX_DEST_ADDR    = "128.83.141.71";
+# my $FIX_DEST_ADDR    = "128.83.141.71";
+# my $FIX_DEST_ADDR    = "192.168.1.3";
 
 
 my $PLOT_EPS         = 0; ## 1 to output eps; 0 to output png figure

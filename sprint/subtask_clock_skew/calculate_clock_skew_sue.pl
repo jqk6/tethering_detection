@@ -43,7 +43,7 @@ my $FIX_IAD_FREQ     = 1; ## fix the clock frequency of iPhone to 1000Hz
 my $FIX_MAC_FREQ     = 1; ## fix the clock frequency of MacBook to 1000Hz
 my $FIX_OTHER_FREQ   = 1; ## fix the clock frequency of oher machines ...
 
-my $FIX_DEST         = 1; ## 1 to fix the TCP destination (necessary if there are more than 1 TCP connection)
+my $FIX_DEST         = 0; ## 1 to fix the TCP destination (necessary if there are more than 1 TCP connection)
 # my $FIX_DEST_ADDR    = "192.168.5.67";
 # my $FIX_DEST_ADDR    = "199.116.177.167";
 # my $FIX_DEST_ADDR    = "10.0.2.1";
@@ -55,7 +55,8 @@ my $FIX_DEST_ADDR    = "128.83.143.16";
 # my $FIX_DEST_ADDR    = "192.168.4.21";
 my $FIX_SRC          = 1;
 # my $FIX_SRC_ADDR     = "128.83";
-my $FIX_SRC_ADDR = "128.83.120.139|140.112.30.32|171.67.215.200|23.200.70.151|128.122.119.202|128.97.27.37|128.125.253.146|169.229.216.200|70.97.96.63|128.138.129.98|198.101.129.15|128.95.155.198|141.211.13.226|128.174.180.122|134.84.119.107|129.171.32.100|202.120.2.102|59.106.161.29|222.122.39.176|162.105.131.113|129.206.13.27|131.111.150.25|163.1.60.42|129.78.5.11";
+# my $FIX_SRC_ADDR = "128.83.120.139|140.112.30.32|171.67.215.200|23.200.70.151|128.122.119.202|128.97.27.37|128.125.253.146|169.229.216.200|70.97.96.63|128.138.129.98|198.101.129.15|128.95.155.198|141.211.13.226|128.174.180.122|134.84.119.107|129.171.32.100|202.120.2.102|59.106.161.29|222.122.39.176|162.105.131.113|129.206.13.27|131.111.150.25|163.1.60.42|129.78.5.11";
+my $FIX_SRC_ADDR = "192.168.1.3|192.168.1.7";
 
 my $PLOT_EPS         = 0; ## 1 to output eps; 0 to output png figure
 # my $PLOT_IP          = "192.168.4.78";
@@ -84,7 +85,7 @@ my %ip_info;        ## IP
 my @freq_candidates = (10, 100, 250, 1000);  ## choose the clock frequency as the closest one
 # my @freq_candidates = ();
 my $freq_threshold = 0.4;           ## the threshold if close to one of the above frequency
-my $threshold = 50;                ## only calculate IPs with enough TCP packets
+my $threshold = 10;                ## only calculate IPs with enough TCP packets
 
 
 #####
