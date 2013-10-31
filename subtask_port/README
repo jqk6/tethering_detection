@@ -1,0 +1,9 @@
+collect a couple of traces that:
+1. using browser 
+2. play Youtube
+
+The goal is to see
+1. if different browsers have different behaviors in opening connection
+2. how different OSs select next port
+3. if youtube use different pkt size in different OSs/browsers
+
