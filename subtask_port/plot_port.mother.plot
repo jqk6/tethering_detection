@@ -1,6 +1,6 @@
 reset
-set terminal postscript eps enhanced color 28
-# set terminal png enhanced 28
+# set terminal postscript eps enhanced color 28
+set terminal png enhanced 28 size 800,600
 # set terminal jpeg enhanced font helvetica 28
 set size ratio 0.7
 
@@ -8,7 +8,7 @@ data_dir = "../processed_data/subtask_port/analysis/"
 fig_dir  = "../processed_data/subtask_port/analysis_figures/"
 file_name = "FILE_NAME"
 fig_name  = "FIG_NAME"
-set output fig_dir.fig_name.".eps"
+set output fig_dir.fig_name.".png"
 
 set xlabel '{/Helvetica=28 X_LABEL}'
 set ylabel '{/Helvetica=28 Y_LABEL}'
