@@ -45,6 +45,8 @@ testbed/exp3
 
 */*/*/output
 
+*txt
+
 ####
 ## duplicate
 */*/MyUtil.pm

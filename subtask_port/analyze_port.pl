@@ -24,7 +24,7 @@ my $DEBUG2 = 1; ## print progress
 my $DEBUG3 = 1; ## print output
 my $DEBUG4 = 0; ## parse port
 my $DEBUG5 = 0; ## TCP flag
-
+my $DEBUG6 = 0; ## IP
 
 #############
 # Constants
@@ -45,8 +45,10 @@ my $ip;
 my $filename;
 
 my %port_info = ();  ## PORT - [UDP | TCP] - [TX | RX | ALL] - TIME - [PORT | LEN]
-my %tcp_info = (); ## [CNT | ACK | CWR | ECN | FIN | NS | PUSH | RES | RESET | SYN | URG]
-                   ## [LEN | OPT_KIND | OPT_LEN | FLIGHT | WIN_SCALE | WIN_SIZE | PDU_SIZE | CONT | REUSED_PORT] - value - count
+my %ip_info   = ();  ## [CNT | DF | RB | SF]
+                     ## [OPT_LEN | OPT_NUM | DS_CE | DS_DSCP | DS_ECN | DS_ECT] 
+my %tcp_info  = ();  ## [CNT | ACK | CWR | ECN | FIN | NS | PUSH | RES | RESET | SYN | URG]
+                     ## [LEN | OPT_KIND | OPT_LEN | FLIGHT | WIN_SCALE | WIN_SIZE | PDU_SIZE | CONT | REUSED_PORT] - value - count
 
 
 
@@ -75,10 +77,20 @@ while(<FH>) {
     chomp;
     print "> $_\n" if($DEBUG4);
 
-    my ($frame_num, $time, $frame_len, $ip_id, $ip_src, $ip_dst, $udp_sport, $udp_dport, $tcp_sport, $tcp_dport, $tcp_flag_ack, $tcp_flag_cwr, $tcp_flag_ecn, $tcp_flag_fin, $tcp_flag_ns, $tcp_flag_push, $tcp_flag_res, $tcp_flag_reset, $tcp_flag_syn, $tcp_flag_urg, $tcp_len, $tcp_opt_kind, $tcp_opt_len, $tcp_bytes_in_flight, $tcp_win_size_scalefactor, $tcp_win_size, $tcp_pdu_size, $tcp_cont, $tcp_reused_ports) = split(/\|/, $_);
+    # my ($frame_num, $time, $frame_len, $ip_id, $ip_src, $ip_dst, $udp_sport, $udp_dport, $tcp_sport, $tcp_dport, $tcp_flag_ack, $tcp_flag_cwr, $tcp_flag_ecn, $tcp_flag_fin, $tcp_flag_ns, $tcp_flag_push, $tcp_flag_res, $tcp_flag_reset, $tcp_flag_syn, $tcp_flag_urg, $tcp_len, $tcp_opt_kind, $tcp_opt_len, $tcp_bytes_in_flight, $tcp_win_size_scalefactor, $tcp_win_size, $tcp_pdu_size, $tcp_cont, $tcp_reused_ports) = split(/\|/, $_);
+    
+    # my ($frame_num, $time, $frame_len, $ip_id, $ip_src, $ip_dst, $ip_flag_df, $ip_flag_rb, $ip_flag_sf, $ip_opt_len, $ip_opt_type_number, $ip_opt_ext_sec_add_sec_info, $ip_opt_id_number, $ip_opt_mtu, $ip_opt_ohc, $ip_opt_padding, $ip_opt_ptr, $ip_opt_qs_rate, $ip_opt_qs_ttl, $ip_opt_qs_unused, $ip_opt_sec_cl, $ip_opt_sid, $ip_dsfield_ce, $ip_dsfield_dscp, $ip_dsfield_ecn, $ip_dsfield_ect, $ip_tos_cost, $ip_tos_delay, $ip_tos_precedence, $ip_tos_reliability, $ip_tos_throughput, $udp_sport, $udp_dport, $tcp_sport, $tcp_dport, $tcp_flag_ack, $tcp_flag_cwr, $tcp_flag_ecn, $tcp_flag_fin, $tcp_flag_ns, $tcp_flag_push, $tcp_flag_res, $tcp_flag_reset, $tcp_flag_syn, $tcp_flag_urg, $tcp_len, $tcp_opt_kind, $tcp_opt_len, $tcp_bytes_in_flight, $tcp_win_size_scalefactor, $tcp_win_size, $tcp_pdu_size, $tcp_cont, $tcp_reused_ports) = split(/\|/, $_);
+    
+    my ($frame_num, $time, $frame_len, $ip_src, $ip_dst, $ip_id, $ip_ttl, $ip_flag_df, $ip_flag_rb, $ip_flag_sf, $ip_opt_len, $ip_opt_type_number, $ip_opt_ext_sec_add_sec_info, $ip_opt_id_number, $ip_opt_mtu, $ip_opt_ohc, $ip_opt_padding, $ip_opt_ptr, $ip_opt_qs_rate, $ip_opt_qs_ttl, $ip_opt_qs_unused, $ip_opt_sec_cl, $ip_opt_sid, $ip_dsfield_ce, $ip_dsfield_dscp, $ip_dsfield_ecn, $ip_dsfield_ect, $ip_tos_cost, $ip_tos_delay, $ip_tos_precedence, $ip_tos_reliability, $ip_tos_throughput, $udp_sport, $udp_dport, $tcp_sport, $tcp_dport, $tcp_seq, $tcp_flag_ack, $tcp_flag_cwr, $tcp_flag_ecn, $tcp_flag_fin, $tcp_flag_ns, $tcp_flag_push, $tcp_flag_res, $tcp_flag_reset, $tcp_flag_syn, $tcp_flag_urg, $tcp_len, $tcp_opt_kind, $tcp_opt_len, $tcp_ts_val, $tcp_ts_ecr, $tcp_bytes_in_flight, $tcp_win_size_scalefactor, $tcp_win_size, $tcp_pdu_size, $tcp_cont, $tcp_reused_ports, $ua) = split(/\|/, $_);
     $time += 0; $frame_len += 0; $udp_sport += 0; $udp_dport += 0; $tcp_sport += 0; $tcp_dport += 0;
+    $ip_id = hex($ip_id);
+    $ip_flag_df += 0; $ip_flag_rb += 0; $ip_flag_sf += 0; 
+    $ip_opt_len += 0; $ip_opt_type_number += 0; $ip_opt_ext_sec_add_sec_info += 0; $ip_opt_id_number += 0; $ip_opt_mtu += 0; $ip_opt_ohc += 0; $ip_opt_padding += 0; $ip_opt_ptr += 0; $ip_opt_qs_rate += 0; $ip_opt_qs_ttl += 0; $ip_opt_qs_unused += 0; $ip_opt_sec_cl += 0; $ip_opt_sid += 0; 
+    $ip_dsfield_ce += 0; $ip_dsfield_dscp += 0; $ip_dsfield_ecn += 0; $ip_dsfield_ect += 0;
+    $ip_tos_cost += 0; $ip_tos_delay += 0; $ip_tos_precedence += 0; $ip_tos_reliability += 0; $ip_tos_throughput += 0;
     $tcp_flag_ack += 0; $tcp_flag_cwr += 0; $tcp_flag_ecn += 0; $tcp_flag_fin += 0; $tcp_flag_ns += 0; $tcp_flag_push += 0; $tcp_flag_res += 0; $tcp_flag_reset += 0; $tcp_flag_syn += 0; $tcp_flag_urg += 0;
-    $tcp_len += 0; $tcp_opt_len += 0; $tcp_bytes_in_flight += 0; $tcp_win_size_scalefactor += 0; $tcp_win_size += 0; $tcp_pdu_size += 0; $tcp_reused_ports += 0;
+    $tcp_len += 0; $tcp_opt_len += 0; $tcp_ts_val += 0; $tcp_ts_ecr += 0; $tcp_bytes_in_flight += 0; $tcp_win_size_scalefactor += 0; $tcp_win_size += 0; $tcp_pdu_size += 0; $tcp_reused_ports += 0;
+
 
     ###############
     ## port
@@ -137,6 +149,144 @@ while(<FH>) {
             die "neither sender nor receiver\n";
         }
     }
+
+
+    ###############
+    ## IP info
+    ##   my %ip_info
+    ##   [TX | RX | ALL] - [CNT | DF | RB | SF]
+    ##   [TX | RX | ALL] - [OPT_LEN | OPT_NUM | DS_CE | DS_DSCP | DS_ECN | DS_ECT | TOS_COST | TOS_DELAY | TOS_PRECEDENCE | TOS_RELIABILITY | TOS_TPUT] 
+    ##         - value - count
+    ###############
+    if($ip_src =~ /$ip/) {
+        ## sender
+        $ip_info{TX}{CNT} ++;
+        $ip_info{ALL}{CNT} ++;
+
+        ## flags
+        print join("|||", ($ip_flag_df, $ip_flag_rb, $ip_flag_sf))."\n" if($DEBUG6);
+
+        if($ip_flag_df == 1) {
+            $ip_info{TX}{DF} ++;
+            $ip_info{ALL}{DF} ++;
+        }
+        if($ip_flag_rb == 1) {
+            $ip_info{TX}{RB} ++;
+            $ip_info{ALL}{RB} ++;
+        }
+        if($ip_flag_sf == 1) {
+            $ip_info{TX}{SF} ++;
+            $ip_info{ALL}{SF} ++;
+        }
+
+
+        ## options
+        print join("|||", ($ip_opt_len, $ip_opt_type_number))."\n" if($DEBUG6);
+
+        $ip_info{TX}{OPT_LEN}{$ip_opt_len} ++;
+        $ip_info{ALL}{OPT_LEN}{$ip_opt_len} ++;
+
+        $ip_info{TX}{OPT_NUM}{$ip_opt_type_number} ++;
+        $ip_info{ALL}{OPT_NUM}{$ip_opt_type_number} ++;
+
+
+        ## ds
+        print join("|||", ($ip_dsfield_ce, $ip_dsfield_dscp, $ip_dsfield_ecn, $ip_dsfield_ect))."\n" if($DEBUG6);
+
+        $ip_info{TX}{DS_CE}{$ip_dsfield_ce} ++;
+        $ip_info{ALL}{DS_CE}{$ip_dsfield_ce} ++;
+
+        $ip_info{TX}{DS_DSCP}{$ip_dsfield_dscp} ++;
+        $ip_info{ALL}{DS_DSCP}{$ip_dsfield_dscp} ++;
+
+        $ip_info{TX}{DS_ECN}{$ip_dsfield_ecn} ++;
+        $ip_info{ALL}{DS_ECN}{$ip_dsfield_ecn} ++;
+
+        $ip_info{TX}{DS_ECT}{$ip_dsfield_ect} ++;
+        $ip_info{ALL}{DS_ECT}{$ip_dsfield_ect} ++;
+
+
+        ## TOS
+        $ip_info{TX}{TOS_COST}{$ip_tos_cost} ++;
+        $ip_info{ALL}{TOS_COST}{$ip_tos_cost} ++;
+
+        $ip_info{TX}{TOS_DELAY}{$ip_tos_delay} ++;
+        $ip_info{ALL}{TOS_DELAY}{$ip_tos_delay} ++;
+
+        $ip_info{TX}{TOS_PRECEDENCE}{$ip_tos_precedence} ++;
+        $ip_info{ALL}{TOS_PRECEDENCE}{$ip_tos_precedence} ++;
+
+        $ip_info{TX}{TOS_RELIABILITY}{$ip_tos_reliability} ++;
+        $ip_info{ALL}{TOS_RELIABILITY}{$ip_tos_reliability} ++;
+
+        $ip_info{TX}{TOS_TPUT}{$ip_tos_throughput} ++;
+        $ip_info{ALL}{TOS_TPUT}{$ip_tos_throughput} ++;
+
+    }
+    elsif($ip_dst =~ /$ip/) {
+        ## receiver
+        $ip_info{RX}{CNT} ++;
+        $ip_info{ALL}{CNT} ++;
+
+        ## flags
+        print join("|||", ($ip_flag_df, $ip_flag_rb, $ip_flag_sf))."\n" if($DEBUG6);
+
+        if($ip_flag_df == 1) {
+            $ip_info{RX}{DF} ++;
+            $ip_info{ALL}{DF} ++;
+        }
+        if($ip_flag_rb == 1) {
+            $ip_info{RX}{RB} ++;
+            $ip_info{ALL}{RB} ++;
+        }
+        if($ip_flag_sf == 1) {
+            $ip_info{RX}{SF} ++;
+            $ip_info{ALL}{SF} ++;
+        }
+
+        ## options
+        print join("|||", ($ip_opt_len, $ip_opt_type_number))."\n" if($DEBUG6);
+
+        $ip_info{RX}{OPT_LEN}{$ip_opt_len} ++;
+        $ip_info{ALL}{OPT_LEN}{$ip_opt_len} ++;
+
+        $ip_info{RX}{OPT_NUM}{$ip_opt_type_number} ++;
+        $ip_info{ALL}{OPT_NUM}{$ip_opt_type_number} ++;
+
+
+        ## ds
+        print join("|||", ($ip_dsfield_ce, $ip_dsfield_dscp, $ip_dsfield_ecn, $ip_dsfield_ect))."\n" if($DEBUG6);
+
+        $ip_info{RX}{DS_CE}{$ip_dsfield_ce} ++;
+        $ip_info{ALL}{DS_CE}{$ip_dsfield_ce} ++;
+
+        $ip_info{RX}{DS_DSCP}{$ip_dsfield_dscp} ++;
+        $ip_info{ALL}{DS_DSCP}{$ip_dsfield_dscp} ++;
+
+        $ip_info{RX}{DS_ECN}{$ip_dsfield_ecn} ++;
+        $ip_info{ALL}{DS_ECN}{$ip_dsfield_ecn} ++;
+
+        $ip_info{RX}{DS_ECT}{$ip_dsfield_ect} ++;
+        $ip_info{ALL}{DS_ECT}{$ip_dsfield_ect} ++;
+
+
+        ## TOS
+        $ip_info{RX}{TOS_COST}{$ip_tos_cost} ++;
+        $ip_info{ALL}{TOS_COST}{$ip_tos_cost} ++;
+
+        $ip_info{RX}{TOS_DELAY}{$ip_tos_delay} ++;
+        $ip_info{ALL}{TOS_DELAY}{$ip_tos_delay} ++;
+
+        $ip_info{RX}{TOS_PRECEDENCE}{$ip_tos_precedence} ++;
+        $ip_info{ALL}{TOS_PRECEDENCE}{$ip_tos_precedence} ++;
+
+        $ip_info{RX}{TOS_RELIABILITY}{$ip_tos_reliability} ++;
+        $ip_info{ALL}{TOS_RELIABILITY}{$ip_tos_reliability} ++;
+
+        $ip_info{RX}{TOS_TPUT}{$ip_tos_throughput} ++;
+        $ip_info{ALL}{TOS_TPUT}{$ip_tos_throughput} ++;
+    }
+
 
 
     ###############
@@ -715,5 +865,212 @@ foreach my $txrx ("TX", "RX", "ALL") {
 
 
 
+
+
+###############
+## output IP flag and other info 
+##   my %ip_info
+##   [TX | RX | ALL] - [CNT | DF | RB | SF]
+##   [TX | RX | ALL] - [OPT_LEN | OPT_NUM | DS_CE | DS_DSCP | DS_ECN | DS_ECT | TOS_COST | TOS_DELAY | TOS_PRECEDENCE | TOS_RELIABILITY | TOS_TPUT] 
+##         - value - count
+###############
+print "Output IP flag info\n" if($DEBUG2);
+print "  # tx IP pkts = ".$ip_info{TX}{CNT}."\n" if($DEBUG3);
+print "  # rx IP pkts = ".$ip_info{RX}{CNT}."\n" if($DEBUG3);
+
+foreach my $txrx ("TX", "RX", "ALL") {
+    ###############
+    ## flags
+    ###############
+    my $out_file_suffix = "ip_flags.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $flag ("DF", "RB", "SF") {
+        $ip_info{$txrx}{$flag} = 0 unless(exists $ip_info{$txrx}{$flag});
+        print FH "$flag, ".($ip_info{$txrx}{$flag} / $ip_info{$txrx}{CNT}).", ".$ip_info{$txrx}{$flag}."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    ###############
+    ## options
+    ###############
+    my $out_file_suffix = "ip_option.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $opt_len (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{OPT_LEN} })) {
+        print FH "$opt_len, ".($ip_info{$txrx}{OPT_LEN}{$opt_len} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_option_num.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $opt_num (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{OPT_NUM} })) {
+        print FH "$opt_num, ".($ip_info{$txrx}{OPT_NUM}{$opt_num} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    ###############
+    ## dsfield: DS_CE | DS_DSCP | DS_ECN | DS_ECT
+    ###############
+    my $out_file_suffix = "ip_ds_ce.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ds_ce (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{DS_CE} })) {
+        print FH "$ds_ce, ".($ip_info{$txrx}{DS_CE}{$ds_ce} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_ds_dscp.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ds_dscp (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{DS_DSCP} })) {
+        print FH "$ds_dscp, ".($ip_info{$txrx}{DS_DSCP}{$ds_dscp} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_ds_ecn.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ds_ecn (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{DS_ECN} })) {
+        print FH "$ds_ecn, ".($ip_info{$txrx}{DS_ECN}{$ds_ecn} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_ds_ect.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ds_ect (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{DS_ECT} })) {
+        print FH "$ds_ect, ".($ip_info{$txrx}{DS_ECT}{$ds_ect} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    ###############
+    ## dsfield: TOS_COST | TOS_DELAY | TOS_PRECEDENCE | TOS_RELIABILITY | TOS_TPUT
+    ###############
+    my $out_file_suffix = "ip_tos_cost.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ip_tos_cost (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{TOS_COST} })) {
+        print FH "$ip_tos_cost, ".($ip_info{$txrx}{TOS_COST}{$ip_tos_cost} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_tos_delay.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ip_tos_delay (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{TOS_DELAY} })) {
+        print FH "$ip_tos_delay, ".($ip_info{$txrx}{TOS_DELAY}{$ip_tos_delay} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_tos_precedence.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ip_tos_precedence (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{TOS_PRECEDENCE} })) {
+        print FH "$ip_tos_precedence, ".($ip_info{$txrx}{TOS_PRECEDENCE}{$ip_tos_precedence} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_tos_reliability.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ip_tos_reliability (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{TOS_RELIABILITY} })) {
+        print FH "$ip_tos_reliability, ".($ip_info{$txrx}{TOS_RELIABILITY}{$ip_tos_reliability} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+
+    my $out_file_suffix = "ip_tos_throughput.$txrx";
+    open FH, "> $output_dir/$filename.$out_file_suffix.txt" or die $!;
+    foreach my $ip_tos_throughput (sort {$a <=> $b} (keys %{ $ip_info{$txrx}{TOS_TPUT} })) {
+        print FH "$ip_tos_throughput, ".($ip_info{$txrx}{TOS_TPUT}{$ip_tos_throughput} / $ip_info{$txrx}{CNT})."\n";
+    }
+    close FH;
+
+    print "  gnuplot\n" if($DEBUG2);
+    my $cmd = "sed 's/FILE_NAME/$filename.$out_file_suffix/g; s/FIG_NAME/$filename.$out_file_suffix/g; s/X_LABEL//g; s/Y_LABEL/ratio/g; s/X_RANGE_S//g; s/X_RANGE_E//g; s/Y_RANGE_S/0/g; s/Y_RANGE_E//g; s/DEGREE/-45/g; ' $gnuplot_dist.mother.plot > tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+    $cmd = "gnuplot tmp.$gnuplot_dist.$out_file_suffix.plot";
+    `$cmd`;
+
+}
 
 

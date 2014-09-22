@@ -7,3 +7,23 @@ The goal is to see
 2. how different OSs select next port
 3. if youtube use different pkt size in different OSs/browsers
 
+
+---
+1. merge pcap files of SJTU wifi trace
+    perl merge_pcap.pl
+
+2. use tshark to get all fields information
+    tshark_cmd.pl
+        > batch_tshark_cmd.sh
+
+3. use tshark to get user agent and identify os
+    tshark_user_agent_cmd.pl
+        > batch_tshark_cmd.sh
+    analyze_os.pl
+
+4. analyze all the fields
+    a) one file contains only one device
+        analyze_port.pl
+    b) one file contains many devices
+        analyze_whole_trace.pl
+

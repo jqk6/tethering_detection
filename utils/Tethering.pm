@@ -49,6 +49,8 @@ sub check_flow_frequency_first_last_span {
 
     ## calculate the clock frequency by using the first and the last packet. 
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -81,6 +83,8 @@ sub check_flow_frequency_first_last_enumeration {
     ## calculate the clock frequency by using the first and the last packet,
     ##   and find the closest one from the given list.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -114,6 +118,8 @@ sub check_flow_frequency_median_span {
     ## Calculate the clock frequency by using the first packet and those after 5 (rx_time_gap) seconds,
     ##   and then use the median as the clock frequency.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -147,6 +153,8 @@ sub check_flow_frequency_median_enumeration {
     ## Calculate the clock frequency by using the first packet and those after 5 (rx_time_gap) seconds,
     ##   use the median as the clock frequency, and find the closest one from the given list.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -179,6 +187,8 @@ sub check_flow_frequency_enumeration_boot_span {
     ## Given a list of possible frequencies, calculate boot time using these frequencies,
     ##   and select the frequency which gives has smallest boot time span
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -244,6 +254,8 @@ sub check_boot_time_first_last_span {
 
     ## calculate the clock frequency by using the first and the last packet. 
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -286,6 +298,8 @@ sub check_boot_time_first_last_enumeration {
     ## calculate the clock frequency by using the first and the last packet,
     ##   and find the closest one from the given list.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -328,6 +342,8 @@ sub check_boot_time_median_span {
     ## Calculate the clock frequency by using the first packet and those after 5 (rx_time_gap) seconds,
     ##   and then use the median as the clock frequency.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -371,6 +387,8 @@ sub check_boot_time_median_enumeration {
     ## Calculate the clock frequency by using the first packet and those after 5 (rx_time_gap) seconds,
     ##   use the median as the clock frequency, and find the closest one from the given list.
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -413,6 +431,8 @@ sub check_boot_time_enumeration_boot_span {
     ## Given a list of possible frequencies, calculate boot time using these frequencies,
     ##   and select the frequency which gives has smallest boot time span
     foreach my $this_flow (keys %{ $flows_ref->{CONN} }) {
+        next unless(exists $flows_ref->{CONN}{$this_flow}{RX_TIME});
+
         my @rx_time = @{ $flows_ref->{CONN}{$this_flow}{RX_TIME} };
         my @tx_time = @{ $flows_ref->{CONN}{$this_flow}{TX_TIME} };
 
@@ -707,8 +727,8 @@ sub calculate_flow_frequency_enumeration_boot_span {
 sub identify_os {
     my ($user_agent_ref) = @_;
 
-    my @os_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox");
-    my @os_names    = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox");
+    my @os_keywords = ("Windows", "Microsoft", "Android", "Mac OS X", "iPhone OS", "uTorrentMac", "Ubuntu", "Xbox", "iPhone");
+    my @os_names    = ("Windows", "Windows",   "Android", "Apple"   , "Apple",     "Apple",       "Linux",  "Xbox", "Apple");
 
     return _identify_os($user_agent_ref, \@os_keywords, \@os_names);
 }
@@ -888,6 +908,101 @@ sub check_gap_ttl_num {
 
 
 ########################################################
+## TCP Window Scale Heuristics
+## @input win_scales_ref: a reference of a hash table from Win Scale to the number of its occurance 
+##
+## @output if_tether: 0=not tethering; 1=tethering
+## @output os: a reference of a hash table of detected OSs
+##
+########################################################
+sub check_win_scale {
+    my $DEBUG0 = 0;
+    my $DEBUG1 = 1;
+
+    my ($win_scales_ref) = @_;
+    my %os;
+    my $thresh = 0.01;
+
+    my $sum = 0;
+    foreach my $this_win (keys %$win_scales_ref) {
+        $sum += $win_scales_ref->{$this_win};
+    }
+
+    foreach my $this_win (keys %$win_scales_ref) {
+        my $ratio = $win_scales_ref->{$this_win} / $sum;
+        print "    $this_win: $ratio\n" if($DEBUG0);
+
+        if($this_win == 16 and $ratio > $thresh) {
+            $os{APPLE} = 1;
+        }
+        elsif($this_win == 64 and $ratio > $thresh) {
+            $os{ANDROID} = 1;
+        }
+        elsif($this_win == 256 and $ratio > $thresh) {
+            $os{WINDOWS} = 1;
+        }
+    }
+
+    my $if_tether = 0;
+    $if_tether = 1 if(scalar(keys %os) > 1);
+
+    return ($if_tether, \%os);
+}  
+
+
+
+########################################################
+## TCP Timestamp Option Heuristics
+## @input opt_kind_ref: a reference of a hash table from TCP kinds to the number of its occurance 
+##
+## @output os: a reference of a hash table of detected OSs
+##
+########################################################
+sub check_tcp_timestamp_option {
+    my $DEBUG0 = 0;
+    my $DEBUG1 = 0;
+
+
+    my ($opt_kind_ref, $opt_kind_flow_ref, $all_flow_thresh, $per_flow_thresh) = @_;
+    my %os;
+    # my $all_flow_thresh = 0.2;
+    # my $per_flow_thresh = 0.1;
+    my $ts_kind = 8;
+
+    my $sum = 0;
+    foreach my $this_opt (keys %$opt_kind_ref) {
+        $sum += $opt_kind_ref->{$this_opt};
+        print "    $this_opt: ".$opt_kind_ref->{$this_opt}." / $sum\n"  if($DEBUG0);
+    }
+
+    my $ratio = 0;
+    $ratio = $opt_kind_ref->{$ts_kind} / $sum if($sum > 0);
+    print "    timestamp: $ratio\n" if($DEBUG0);
+
+    if($ratio < $all_flow_thresh) {
+        $os{WINDOWS} = 1;
+    }
+    else {
+        foreach my $flow (keys %{ $opt_kind_flow_ref->{CONN} }) {
+            my $num_pkt = 0;
+            my $num_ts_pkt = 0;
+            foreach my $this_opt (keys %{ $opt_kind_flow_ref->{CONN}{$flow}{OPT_KIND} }) {
+                $num_pkt += $opt_kind_flow_ref->{CONN}{$flow}{OPT_KIND}{$this_opt};
+                $num_ts_pkt = $opt_kind_flow_ref->{CONN}{$flow}{OPT_KIND}{$this_opt} if($this_opt == 8);
+            }
+
+            if($num_pkt > 5 and ($num_ts_pkt/$num_pkt) < $per_flow_thresh) {
+                $os{WINDOWS} = 1;
+            }
+        }
+    }
+    
+
+    return \%os;
+}  
+
+
+########################################################
 ## Frequency Stability
 ## not a detection method, just to check if the frequency is stable
 ## 1. check_freq_stability_enu
@@ -900,6 +1015,88 @@ sub check_gap_ttl_num {
 
 ########################################################
 ## IP ID
-## not a detection method, just to check if IP ID monotonicity
+## 
 ########################################################
+sub check_ip_id_monotonicity {
+    my $DEBUG0 = 0;
+    my $DEBUG1 = 0;
+
+    my ($ip_ids_ref, $ip_ids_flow_ref) = @_;
+
+    my %os;
+    
+    my $thresh = 0.02;
+    my $num_disorder = 0;
+    
+    my $prev = -1;
+    my $cnt = 0;
+    foreach my $this_id (@$ip_ids_ref) {
+        # print "$this_id\n";
+        $cnt ++;
+
+        if($prev == -1 or $this_id >= $prev) {
+            ## ok here
+        }
+        else {
+            ## not increasing..
+            $num_disorder ++;
+        }
+
+        $prev = $this_id;
+    }
+
+    my $ratio = 0;
+    $ratio = $num_disorder / $cnt if($cnt > 0);
+    print "    disorder=$ratio ($num_disorder / $cnt)\n" if($DEBUG1);
+
+    if($ratio > $thresh) {
+        ## check per flow first
+        my $num_disorder_flow = 0;
+        my $num_flow = 0;
+        foreach my $flow (keys %{ $ip_ids_flow_ref->{CONN} }) {
+            print "    $flow => " if($DEBUG0);
+            $num_flow ++;
+
+            my $prev = -1;
+            my $cnt = 0;
+            $num_disorder = 0;
+
+            foreach my $this_id (@{ $ip_ids_flow_ref->{CONN}{$flow}{IP_ID} }) {
+                $cnt ++;
+
+                if($prev == -1 or $this_id >= $prev) {
+                    ## ok here
+                }
+                else {
+                    ## not increasing..
+                    $num_disorder ++;
+                }
+
+                $prev = $this_id;
+            }
+
+            next if($cnt < 4);
+
+            my $ratio = 0;
+            $ratio = $num_disorder / $cnt if($cnt > 0);
+            print " $ratio / $cnt\n" if($DEBUG0);
+
+            $num_disorder_flow ++ if($ratio > $thresh);
+        }
+        
+
+        $ratio = $num_disorder_flow / $num_flow;
+        print "    > $ratio = $num_disorder_flow / $num_flow\n" if($DEBUG1);
+        if($num_disorder_flow / $num_flow > 0.1) {
+            $os{APPLE} = 1;
+        }
+        else {
+            $os{ANDROID} = 1;
+        }
+
+    }
+
+    return \%os;
+}
+
 1;

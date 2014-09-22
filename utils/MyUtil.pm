@@ -855,6 +855,7 @@ sub recall {
 sub precision {
 	my ($tp, $fn, $fp, $tn) = @_;
 
+	return 0 if($tp + $fp == 0);
 	return ( $tp / ($tp + $fp) );
 }
 
